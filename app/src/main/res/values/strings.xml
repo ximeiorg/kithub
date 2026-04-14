@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">Kithub</string>
+    <string name="github_icon">GitHub</string>
+    <string name="loading">Loading...</string>
+    <string name="error_retry">Error. Tap to retry</string>
+    <string name="no_results">No results found</string>
+    <string name="home">Home</string>
+    <string name="search">Search</string>
+    <string name="notifications">Notifications</string>
+    <string name="profile">Profile</string>
+    <string name="settings">Settings</string>
+    <string name="logout">Logout</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="sign_in_github">Sign in with GitHub</string>
+    <string name="sign_in_device">Sign in with Device Code</string>
+    <string name="stars">stars</string>
+    <string name="forks">forks</string>
+    <string name="watchers">watchers</string>
+    <string name="issues">Issues</string>
+    <string name="pulls">Pull Requests</string>
+    <string name="code">Code</string>
+    <string name="commits">Commits</string>
+    <string name="repositories">Repositories</string>
+    <string name="followers">Followers</string>
+    <string name="following">Following</string>
+    <string name="open">Open</string>
+    <string name="closed">Closed</string>
+    <string name="merged">Merged</string>
+    <string name="draft">Draft</string>
+    <string name="back">Back</string>
+    <string name="retry">Retry</string>
+    <string name="language">Language</string>
+    <string name="license">License</string>
+    <string name="default_branch">Default branch</string>
+    <string name="view_code">View Code</string>
+</resources>
