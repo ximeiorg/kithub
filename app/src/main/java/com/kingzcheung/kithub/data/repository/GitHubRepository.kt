@@ -62,6 +62,9 @@ class RepositoryRepository @Inject constructor(
     suspend fun getContents(owner: String, repo: String, path: String, ref: String? = null): List<Content> =
         api.getContents(owner, repo, path, ref).map { it.toDomain() }
     
+    suspend fun getFileContent(owner: String, repo: String, path: String, ref: String? = null): Content =
+        api.getFileContent(owner, repo, path, ref).toDomain()
+    
     suspend fun getReadme(owner: String, repo: String, ref: String? = null): Content =
         api.getReadme(owner, repo, ref).toDomain()
     

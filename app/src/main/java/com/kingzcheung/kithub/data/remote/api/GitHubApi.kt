@@ -47,6 +47,14 @@ interface GitHubApi {
         @Query("ref") ref: String? = null
     ): List<ContentDto>
     
+    @GET("repos/{owner}/{repo}/contents/{path}")
+    suspend fun getFileContent(
+        @Path("owner") owner: String,
+        @Path("repo") repo: String,
+        @Path("path") path: String,
+        @Query("ref") ref: String? = null
+    ): ContentDto
+    
     @GET("repos/{owner}/{repo}/readme")
     suspend fun getReadme(
         @Path("owner") owner: String,

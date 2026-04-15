@@ -17,7 +17,7 @@ import javax.inject.Inject
 data class FileViewerState(
     val content: Content? = null,
     val fileContent: String? = null,
-    val loading: Boolean = false,
+    val loading: Boolean = true,
     val error: String? = null
 )
 
@@ -48,20 +48,15 @@ class FileViewerViewModel @Inject constructor(
             _state.update { it.copy(loading = true, error = null) }
             try {
                 Log.d(TAG, "Loading file $owner/$repo/$path")
-                val content = repositoryRepository.getContents(owner, repo, path, branch)
-                if (content.isNotEmpty()) {
-                    val file = content.first()
-                    Log.d(TAG, "File loaded: ${file.name}")
-                    val decodedContent = file.content?.let { decodeBase64(it) }
-                    _state.update { 
-                        it.copy(
-                            content = file,
-                            fileContent = decodedContent,
-                            loading = false
-                        )
-                    }
-                } else {
-                    _state.update { it.copy(loading = false, error = "File not found") }
+                val file = repositoryRepository.getFileContent(owner, repo, path, branch)
+                Log.d(TAG, "File loaded: ${file.name}")
+                val decodedContent = file.content?.let { decodeBase64(it) }
+                _state.update { 
+                    it.copy(
+                        content = file,
+                        fileContent = decodedContent,
+                        loading = false
+                    )
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading file: ${e.message}", e)

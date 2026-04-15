@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 data class PullRequestDetailState(
     val pullRequest: PullRequest? = null,
-    val loading: Boolean = false,
+    val loading: Boolean = true,
     val error: String? = null
 )
 

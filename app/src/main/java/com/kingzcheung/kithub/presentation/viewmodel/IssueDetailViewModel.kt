@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 data class IssueDetailState(
     val issue: Issue? = null,
-    val loading: Boolean = false,
+    val loading: Boolean = true,
     val error: String? = null
 )
 

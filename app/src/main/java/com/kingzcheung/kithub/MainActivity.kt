@@ -4,6 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -53,7 +57,31 @@ fun KithubApp() {
             
             NavHost(
                 navController = navController,
-                startDestination = if (authState.isAuthenticated) "main" else "auth"
+                startDestination = if (authState.isAuthenticated) "main" else "auth",
+                enterTransition = {
+                    slideIntoContainer(
+                        towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                        animationSpec = tween(300)
+                    )
+                },
+                exitTransition = {
+                    slideOutOfContainer(
+                        towards = AnimatedContentTransitionScope.SlideDirection.End,
+                        animationSpec = tween(300)
+                    )
+                },
+                popEnterTransition = {
+                    slideIntoContainer(
+                        towards = AnimatedContentTransitionScope.SlideDirection.End,
+                        animationSpec = tween(300)
+                    )
+                },
+                popExitTransition = {
+                    slideOutOfContainer(
+                        towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                        animationSpec = tween(300)
+                    )
+                }
             ) {
                 composable("auth") {
                     AuthScreen(
@@ -88,23 +116,7 @@ fun KithubApp() {
                         }
                     )
                 }
-                
-                composable("issues") {
-                    IssuesListScreen(
-                        onNavigateToIssue = { owner, repo, number ->
-                            navController.navigate("issue/$owner/$repo/$number")
-                        }
-                    )
-                }
-                
-                composable("pulls") {
-                    PullRequestsListScreen(
-                        onNavigateToPullRequest = { owner, repo, number ->
-                            navController.navigate("pr/$owner/$repo/$number")
-                        }
-                    )
-                }
-                
+
                 composable(
                     "user/{username}",
                     arguments = listOf(navArgument("username") { type = NavType.StringType })
@@ -130,17 +142,60 @@ fun KithubApp() {
                     RepositoryScreen(
                         owner = owner,
                         repoName = repo,
-                        onNavigateToIssue = { number ->
-                            navController.navigate("issue/$owner/$repo/$number")
-                        },
-                        onNavigateToPullRequest = { number ->
-                            navController.navigate("pr/$owner/$repo/$number")
-                        },
-                        onNavigateToCommit = { sha ->
-                            navController.navigate("commit/$owner/$repo/$sha")
-                        },
+                        onNavigateBack = { navController.navigateUp() },
+                        onNavigateToIssues = { navController.navigate("issues/$owner/$repo") },
+                        onNavigateToPullRequests = { navController.navigate("pulls/$owner/$repo") },
+                        onNavigateToCommits = { navController.navigate("commits/$owner/$repo") },
                         onNavigateToUser = { username ->
                             navController.navigate("user/$username")
+                        }
+                    )
+                }
+                
+                composable(
+                    "issues/{owner}/{repo}",
+                    arguments = listOf(
+                        navArgument("owner") { type = NavType.StringType },
+                        navArgument("repo") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val owner = backStackEntry.arguments?.getString("owner") ?: ""
+                    val repo = backStackEntry.arguments?.getString("repo") ?: ""
+                    IssuesListScreen(
+                        onNavigateToIssue = { _, _, number ->
+                            navController.navigate("issue/$owner/$repo/$number")
+                        }
+                    )
+                }
+                
+                composable(
+                    "pulls/{owner}/{repo}",
+                    arguments = listOf(
+                        navArgument("owner") { type = NavType.StringType },
+                        navArgument("repo") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val owner = backStackEntry.arguments?.getString("owner") ?: ""
+                    val repo = backStackEntry.arguments?.getString("repo") ?: ""
+                    PullRequestsListScreen(
+                        onNavigateToPullRequest = { _, _, number ->
+                            navController.navigate("pr/$owner/$repo/$number")
+                        }
+                    )
+                }
+                
+                composable(
+                    "commits/{owner}/{repo}",
+                    arguments = listOf(
+                        navArgument("owner") { type = NavType.StringType },
+                        navArgument("repo") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val owner = backStackEntry.arguments?.getString("owner") ?: ""
+                    val repo = backStackEntry.arguments?.getString("repo") ?: ""
+                    CommitsListScreen(
+                        onNavigateToCommit = { sha ->
+                            navController.navigate("commit/$owner/$repo/$sha")
                         }
                     )
                 }
@@ -194,7 +249,9 @@ fun KithubApp() {
                         navArgument("path") { type = NavType.StringType }
                     )
                 ) {
-                    FileViewerScreen()
+                    FileViewerScreen(
+                        onNavigateBack = { navController.navigateUp() }
+                    )
                 }
             }
         }

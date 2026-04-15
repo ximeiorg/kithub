@@ -21,7 +21,7 @@ data class UserState(
     val starred: List<Repository> = emptyList(),
     val followers: List<UserBrief> = emptyList(),
     val following: List<UserBrief> = emptyList(),
-    val loading: Boolean = false,
+    val loading: Boolean = true,
     val error: String? = null,
     val reposPage: Int = 1
 )

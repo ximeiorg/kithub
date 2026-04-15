@@ -25,7 +25,7 @@ data class RepositoryState(
     val commits: List<CommitBrief> = emptyList(),
     val branches: List<Branch> = emptyList(),
     val selectedBranch: String = "main",
-    val loading: Boolean = false,
+    val loading: Boolean = true,
     val error: String? = null,
     val isStarred: Boolean = false,
     val currentPath: String = ""

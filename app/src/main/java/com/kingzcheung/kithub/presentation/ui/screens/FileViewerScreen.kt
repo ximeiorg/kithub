@@ -22,6 +22,7 @@ import com.kingzcheung.kithub.presentation.viewmodel.FileViewerViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FileViewerScreen(
+    onNavigateBack: () -> Unit = {},
     viewModel: FileViewerViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -36,7 +37,7 @@ fun FileViewerScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
@@ -83,12 +84,53 @@ fun FileViewerScreen(
                     }
                 }
             }
-        } else if (state.content != null && state.fileContent != null) {
-            FileViewerContent(
-                content = state.content!!,
-                fileContent = state.fileContent!!,
-                paddingValues = paddingValues
-            )
+        } else if (state.content != null) {
+            val content = state.content!!
+            val fileName = content.name.lowercase()
+            val isBinary = isBinaryFile(fileName)
+            
+            if (isBinary) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            Icons.Default.InsertDriveFile,
+                            contentDescription = "Binary file",
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = content.name,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Binary file • ${content.size} bytes",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        if (content.downloadUrl != null) {
+                            Button(onClick = {}) {
+                                Icon(Icons.Default.Download, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Download")
+                            }
+                        }
+                    }
+                }
+            } else if (state.fileContent != null) {
+                FileViewerContent(
+                    content = content,
+                    fileContent = state.fileContent!!,
+                    paddingValues = paddingValues
+                )
+            }
         }
     }
 }
@@ -278,4 +320,31 @@ fun simpleMarkdownToHtml(markdown: String): String {
         .replace("\n", "<br>")
     
     return "<p>$html</p>"
+}
+
+fun isBinaryFile(fileName: String): Boolean {
+    val name = fileName.lowercase()
+    val binaryExtensions = listOf(
+        ".exe", ".dll", ".so", ".dylib", ".a", ".lib",
+        ".zip", ".tar", ".gz", ".rar", ".7z", ".jar", ".war",
+        ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+        ".mp3", ".mp4", ".avi", ".mov", ".wmv", ".flv", ".mkv",
+        ".iso", ".dmg", ".apk", ".aab", ".ipa",
+        ".class", ".jar", ".war", ".ear",
+        ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".webp",
+        ".sqlite", ".db", ".mdb",
+        ".bin", ".dat"
+    )
+    val textExtensions = listOf(
+        ".txt", ".md", ".markdown", ".json", ".xml", ".yaml", ".yml",
+        ".kt", ".kts", ".java", ".py", ".js", ".ts", ".tsx", ".jsx",
+        ".c", ".cpp", ".h", ".hpp", ".cs", ".go", ".rs", ".rb",
+        ".php", ".html", ".css", ".scss", ".sass", ".less",
+        ".sh", ".bash", ".zsh", ".bat", ".cmd", ".ps1",
+        ".sql", ".gradle", ".properties", ".gitignore", ".dockerfile",
+        ".toml", ".ini", ".cfg", ".conf", ".env"
+    )
+    
+    return binaryExtensions.any { name.endsWith(it) } && 
+           !textExtensions.any { name.endsWith(it) }
 }

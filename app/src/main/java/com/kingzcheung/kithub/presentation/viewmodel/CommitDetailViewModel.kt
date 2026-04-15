@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 data class CommitDetailState(
     val commit: Commit? = null,
-    val loading: Boolean = false,
+    val loading: Boolean = true,
     val error: String? = null
 )
 

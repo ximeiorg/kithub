@@ -110,7 +110,8 @@ fun LanguageBadge(
 fun IconText(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     text: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    textStyle: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.bodySmall
 ) {
     Row(
         modifier = modifier,
@@ -119,13 +120,13 @@ fun IconText(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            modifier = Modifier.size(16.dp),
+            modifier = Modifier.size(14.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(
             text = text,
-            style = MaterialTheme.typography.bodySmall,
+            style = textStyle,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
