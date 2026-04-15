@@ -75,6 +75,7 @@ dependencies {
     implementation(libs.okhttp.logging.interceptor)
 
     implementation(libs.coil.compose)
+    implementation(libs.coil)
     implementation(libs.kotlinx.coroutines.core)
 
     implementation(libs.hilt.android)
@@ -82,7 +83,10 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
 
     implementation(libs.datastore.preferences)
-    implementation(libs.commonmark)
+    implementation(libs.markwon.core)
+    implementation(libs.markwon.image.coil)
+    implementation(libs.markwon.ext.tables)
+    implementation(libs.markwon.html)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

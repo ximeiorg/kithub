@@ -22,6 +22,9 @@ material = "1.11.0"
 kotlinCompilerExtension = "1.5.8"
 gson = "2.10.1"
 commonmark = "0.21.0"
+jetbrainsMarkdown = "0.7.3"
+commonmarkGfmTables = "0.21.0"
+markwon = "4.6.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -45,6 +48,7 @@ okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhtt
 okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
 datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
@@ -58,6 +62,15 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 commonmark = { group = "org.commonmark", name = "commonmark", version.ref = "commonmark" }
+commonmark-gfm-tables = { group = "org.commonmark", name = "commonmark-ext-gfm-tables", version.ref = "commonmarkGfmTables" }
+jetbrains-markdown = { group = "org.jetbrains", name = "markdown", version.ref = "jetbrainsMarkdown" }
+markwon-core = { group = "io.noties.markwon", name = "core", version.ref = "markwon" }
+markwon-image = { group = "io.noties.markwon", name = "image", version.ref = "markwon" }
+markwon-image-coil = { group = "io.noties.markwon", name = "image-coil", version.ref = "markwon" }
+markwon-ext-tables = { group = "io.noties.markwon", name = "ext-tables", version.ref = "markwon" }
+markwon-html = { group = "io.noties.markwon", name = "html", version.ref = "markwon" }
+markwon-image-okhttp = { group = "io.noties.markwon", name = "image-okhttp", version.ref = "markwon" }
+markwon-syntax-highlight = { group = "io.noties.markwon", name = "syntax-highlight", version.ref = "markwon" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

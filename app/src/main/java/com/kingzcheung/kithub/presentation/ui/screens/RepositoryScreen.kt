@@ -1,5 +1,6 @@
 package com.kingzcheung.kithub.presentation.ui.screens
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,22 +16,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kingzcheung.kithub.domain.model.Branch
 import com.kingzcheung.kithub.presentation.ui.components.*
+import com.kingzcheung.kithub.presentation.ui.components.MarkwonText
 import com.kingzcheung.kithub.presentation.viewmodel.RepositoryViewModel
-import org.commonmark.node.*
-import org.commonmark.parser.Parser
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -316,18 +310,13 @@ fun RepositoryScreen(
                     }
                     
                     item {
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                        ) {
-                            MarkdownContent(
-                                markdown = state.readme!!,
-                                modifier = Modifier.padding(16.dp)
-                            )
-                        }
+                        MarkwonText(
+                            markdown = state.readme!!,
+                            owner = state.repository!!.owner.login,
+                            repo = state.repository!!.name,
+                            branch = state.selectedBranch,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
                     }
                 }
             }
@@ -410,167 +399,6 @@ fun RepositoryMenuItem(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
             )
         }
-    }
-}
-
-@Composable
-fun MarkdownContent(
-    markdown: String,
-    modifier: Modifier = Modifier
-) {
-    val parser = Parser.builder().build()
-    val document = parser.parse(markdown)
-    
-    val annotatedString = remember(markdown) {
-        parseMarkdownToAnnotatedString(document)
-    }
-    
-    Text(
-        text = annotatedString,
-        style = MaterialTheme.typography.bodyMedium.copy(
-            lineHeight = 24.sp
-        ),
-        modifier = modifier
-    )
-}
-
-fun parseMarkdownToAnnotatedString(document: Node): AnnotatedString {
-    return buildAnnotatedString {
-        var node = document.firstChild
-        while (node != null) {
-            when (node) {
-                is Heading -> {
-                    withStyle(
-                        SpanStyle(
-                            fontSize = when (node.level) {
-                                1 -> 28.sp
-                                2 -> 24.sp
-                                3 -> 20.sp
-                                else -> 18.sp
-                            },
-                            fontWeight = FontWeight.Bold
-                        )
-                    ) {
-                        appendNodeText(node)
-                    }
-                    append("\n\n")
-                }
-                is Paragraph -> {
-                    appendNodeText(node)
-                    append("\n\n")
-                }
-                is BulletList -> {
-                    var item = node.firstChild
-                    while (item != null) {
-                        if (item is ListItem) {
-                            append("• ")
-                            appendNodeText(item)
-                            append("\n")
-                        }
-                        item = item.next
-                    }
-                    append("\n")
-                }
-                is FencedCodeBlock -> {
-                    val codeBlock = node as FencedCodeBlock
-                    withStyle(
-                        SpanStyle(
-                            fontFamily = FontFamily.Monospace,
-                            background = Color(0xFF2D2D2D),
-                            color = Color(0xFFE0E0E0)
-                        )
-                    ) {
-                        append(codeBlock.literal)
-                    }
-                    append("\n\n")
-                }
-                is Link -> {
-                    val link = node as Link
-                    withStyle(
-                        SpanStyle(
-                            color = Color(0xFF58A6FF),
-                            textDecoration = TextDecoration.Underline
-                        )
-                    ) {
-                        append(link.title ?: link.destination)
-                    }
-                }
-                is StrongEmphasis -> {
-                    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                        appendNodeText(node)
-                    }
-                }
-                is Emphasis -> {
-                    withStyle(SpanStyle(fontStyle = FontStyle.Italic)) {
-                        appendNodeText(node)
-                    }
-                }
-                is Code -> {
-                    val code = node as Code
-                    withStyle(
-                        SpanStyle(
-                            fontFamily = FontFamily.Monospace,
-                            background = Color(0xFF363636),
-                            color = Color(0xFFE0E0E0)
-                        )
-                    ) {
-                        append(code.literal)
-                    }
-                }
-                else -> {
-                    appendNodeText(node)
-                }
-            }
-            node = node.next
-        }
-    }
-}
-
-fun Appendable.appendNodeText(node: Node) {
-    var child = node.firstChild
-    while (child != null) {
-        when (child) {
-            is Text -> append(child.literal)
-            is StrongEmphasis -> {
-                (this as AnnotatedString.Builder).withStyle(
-                    SpanStyle(fontWeight = FontWeight.Bold)
-                ) {
-                    appendNodeText(child)
-                }
-            }
-            is Emphasis -> {
-                (this as AnnotatedString.Builder).withStyle(
-                    SpanStyle(fontStyle = FontStyle.Italic)
-                ) {
-                    appendNodeText(child)
-                }
-            }
-            is Code -> {
-                val code = child as Code
-                (this as AnnotatedString.Builder).withStyle(
-                    SpanStyle(
-                        fontFamily = FontFamily.Monospace,
-                        background = Color(0xFF363636),
-                        color = Color(0xFFE0E0E0)
-                    )
-                ) {
-                    append(code.literal)
-                }
-            }
-            is Link -> {
-                val link = child as Link
-                (this as AnnotatedString.Builder).withStyle(
-                    SpanStyle(
-                        color = Color(0xFF58A6FF),
-                        textDecoration = TextDecoration.Underline
-                    )
-                ) {
-                    append(link.title ?: link.destination)
-                }
-            }
-            else -> appendNodeText(child)
-        }
-        child = child.next
     }
 }
 
