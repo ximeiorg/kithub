@@ -1,11 +1,11 @@
 package com.kingzcheung.kithub.presentation.ui.screens
 
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -13,13 +13,24 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kingzcheung.kithub.domain.model.Branch
 import com.kingzcheung.kithub.presentation.ui.components.*
 import com.kingzcheung.kithub.presentation.viewmodel.RepositoryViewModel
+import org.commonmark.node.*
+import org.commonmark.parser.Parser
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +48,7 @@ fun RepositoryScreen(
     var showBranchSelector by remember { mutableStateOf(false) }
     
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { },
@@ -60,7 +72,10 @@ fun RepositoryScreen(
                             Icon(Icons.Default.Share, contentDescription = "Share")
                         }
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
         }
     ) { padding ->
@@ -68,7 +83,8 @@ fun RepositoryScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding),
+                    .padding(padding)
+                    .background(MaterialTheme.colorScheme.background),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
@@ -77,7 +93,8 @@ fun RepositoryScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding),
+                    .padding(padding)
+                    .background(MaterialTheme.colorScheme.background),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -105,89 +122,80 @@ fun RepositoryScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding),
+                    .padding(padding)
+                    .background(MaterialTheme.colorScheme.background),
                 contentPadding = PaddingValues(vertical = 8.dp)
             ) {
                 item {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        )
+                    Column(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier.clickable { onNavigateToUser(repo.owner.login) }
                             ) {
-                                Box(
-                                    modifier = Modifier.clickable { onNavigateToUser(repo.owner.login) }
-                                ) {
-                                    UserAvatar(
-                                        avatarUrl = repo.owner.avatarUrl,
-                                        size = 40
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Column {
+                                UserAvatar(
+                                    avatarUrl = repo.owner.avatarUrl,
+                                    size = 40
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column {
+                                Text(
+                                    text = repo.fullName,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                if (repo.description != null) {
                                     Text(
-                                        text = repo.fullName,
-                                        style = MaterialTheme.typography.titleMedium
+                                        text = repo.description,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 2
                                     )
-                                    if (repo.description != null) {
-                                        Text(
-                                            text = repo.description,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            maxLines = 2
-                                        )
-                                    }
                                 }
                             }
-                            
-                            Spacer(modifier = Modifier.height(12.dp))
-                            
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                IconText(
-                                    icon = Icons.Default.Star,
-                                    text = "${repo.stargazersCount}",
-                                    textStyle = MaterialTheme.typography.labelSmall
-                                )
-                                IconText(
-                                    icon = Icons.Default.CallSplit,
-                                    text = "${repo.forksCount}",
-                                    textStyle = MaterialTheme.typography.labelSmall
-                                )
-                                IconText(
-                                    icon = Icons.Default.ErrorOutline,
-                                    text = "${repo.openIssuesCount}",
-                                    textStyle = MaterialTheme.typography.labelSmall
-                                )
-                            }
-                            
-                            repo.language?.let { lang ->
-                                Spacer(modifier = Modifier.height(6.dp))
-                                LanguageBadge(language = lang)
-                            }
-                            
-                            repo.license?.let { license ->
-                                Spacer(modifier = Modifier.height(6.dp))
-                                IconText(
-                                    icon = Icons.Default.Gavel,
-                                    text = license.name,
-                                    textStyle = MaterialTheme.typography.labelSmall
-                                )
-                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            IconText(
+                                icon = Icons.Default.Star,
+                                text = "${repo.stargazersCount}",
+                                textStyle = MaterialTheme.typography.labelSmall
+                            )
+                            IconText(
+                                icon = Icons.Default.CallSplit,
+                                text = "${repo.forksCount}",
+                                textStyle = MaterialTheme.typography.labelSmall
+                            )
+                            IconText(
+                                icon = Icons.Default.ErrorOutline,
+                                text = "${repo.openIssuesCount}",
+                                textStyle = MaterialTheme.typography.labelSmall
+                            )
+                        }
+                        
+                        repo.language?.let { lang ->
+                            Spacer(modifier = Modifier.height(6.dp))
+                            LanguageBadge(language = lang)
+                        }
+                        
+                        repo.license?.let { license ->
+                            Spacer(modifier = Modifier.height(6.dp))
+                            IconText(
+                                icon = Icons.Default.Gavel,
+                                text = license.name,
+                                textStyle = MaterialTheme.typography.labelSmall
+                            )
                         }
                     }
                     
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-                
-                item {
                     Spacer(modifier = Modifier.height(8.dp))
                 }
                 
@@ -234,37 +242,41 @@ fun RepositoryScreen(
                 
                 item {
                     Spacer(modifier = Modifier.height(8.dp))
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 12.dp))
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
                 
                 item {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
-                            .clickable { showBranchSelector = true },
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                            .clickable { showBranchSelector = true }
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+                            .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             Icons.Outlined.Source,
                             contentDescription = "Branch",
-                            modifier = Modifier.size(24.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.primary
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = state.selectedBranch,
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.weight(1f))
                         Icon(
-                            Icons.Default.ChevronRight,
-                            contentDescription = null,
+                            Icons.Default.UnfoldMore,
+                            contentDescription = "Change branch",
                             modifier = Modifier.size(20.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
                 
                 item {
@@ -283,40 +295,22 @@ fun RepositoryScreen(
                     )
                 }
                 
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 12.dp))
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-                
                 if (state.readme != null) {
                     item {
+                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = "README",
                             style = MaterialTheme.typography.titleSmall,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 16.dp)
                         )
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                     
                     item {
-                        AndroidView(
-                            factory = { ctx ->
-                                WebView(ctx).apply {
-                                    webViewClient = WebViewClient()
-                                    settings.javaScriptEnabled = true
-                                    loadDataWithBaseURL(
-                                        null,
-                                        generateMarkdownHtml(state.readme!!),
-                                        "text/html",
-                                        "UTF-8",
-                                        null
-                                    )
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(300.dp)
-                                .padding(horizontal = 12.dp)
+                        MarkdownContent(
+                            markdown = state.readme!!,
+                            modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }
                 }
@@ -349,7 +343,7 @@ fun RepositoryMenuItem(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -368,15 +362,176 @@ fun RepositoryMenuItem(
             Text(
                 text = "$count",
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.primary
             )
         }
         Icon(
             Icons.Default.ChevronRight,
             contentDescription = null,
             modifier = Modifier.size(20.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
         )
+    }
+}
+
+@Composable
+fun MarkdownContent(
+    markdown: String,
+    modifier: Modifier = Modifier
+) {
+    val parser = Parser.builder().build()
+    val document = parser.parse(markdown)
+    
+    val annotatedString = remember(markdown) {
+        parseMarkdownToAnnotatedString(document)
+    }
+    
+    Text(
+        text = annotatedString,
+        style = MaterialTheme.typography.bodyMedium.copy(
+            lineHeight = 24.sp
+        ),
+        modifier = modifier
+    )
+}
+
+fun parseMarkdownToAnnotatedString(document: Node): AnnotatedString {
+    return buildAnnotatedString {
+        var node = document.firstChild
+        while (node != null) {
+            when (node) {
+                is Heading -> {
+                    withStyle(
+                        SpanStyle(
+                            fontSize = when (node.level) {
+                                1 -> 28.sp
+                                2 -> 24.sp
+                                3 -> 20.sp
+                                else -> 18.sp
+                            },
+                            fontWeight = FontWeight.Bold
+                        )
+                    ) {
+                        appendNodeText(node)
+                    }
+                    append("\n\n")
+                }
+                is Paragraph -> {
+                    appendNodeText(node)
+                    append("\n\n")
+                }
+                is BulletList -> {
+                    var item = node.firstChild
+                    while (item != null) {
+                        if (item is ListItem) {
+                            append("• ")
+                            appendNodeText(item)
+                            append("\n")
+                        }
+                        item = item.next
+                    }
+                    append("\n")
+                }
+                is FencedCodeBlock -> {
+                    val codeBlock = node as FencedCodeBlock
+                    withStyle(
+                        SpanStyle(
+                            fontFamily = FontFamily.Monospace,
+                            background = Color(0xFF2D2D2D),
+                            color = Color(0xFFE0E0E0)
+                        )
+                    ) {
+                        append(codeBlock.literal)
+                    }
+                    append("\n\n")
+                }
+                is Link -> {
+                    val link = node as Link
+                    withStyle(
+                        SpanStyle(
+                            color = Color(0xFF58A6FF),
+                            textDecoration = TextDecoration.Underline
+                        )
+                    ) {
+                        append(link.title ?: link.destination)
+                    }
+                }
+                is StrongEmphasis -> {
+                    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                        appendNodeText(node)
+                    }
+                }
+                is Emphasis -> {
+                    withStyle(SpanStyle(fontStyle = FontStyle.Italic)) {
+                        appendNodeText(node)
+                    }
+                }
+                is Code -> {
+                    val code = node as Code
+                    withStyle(
+                        SpanStyle(
+                            fontFamily = FontFamily.Monospace,
+                            background = Color(0xFF363636),
+                            color = Color(0xFFE0E0E0)
+                        )
+                    ) {
+                        append(code.literal)
+                    }
+                }
+                else -> {
+                    appendNodeText(node)
+                }
+            }
+            node = node.next
+        }
+    }
+}
+
+fun Appendable.appendNodeText(node: Node) {
+    var child = node.firstChild
+    while (child != null) {
+        when (child) {
+            is Text -> append(child.literal)
+            is StrongEmphasis -> {
+                (this as AnnotatedString.Builder).withStyle(
+                    SpanStyle(fontWeight = FontWeight.Bold)
+                ) {
+                    appendNodeText(child)
+                }
+            }
+            is Emphasis -> {
+                (this as AnnotatedString.Builder).withStyle(
+                    SpanStyle(fontStyle = FontStyle.Italic)
+                ) {
+                    appendNodeText(child)
+                }
+            }
+            is Code -> {
+                val code = child as Code
+                (this as AnnotatedString.Builder).withStyle(
+                    SpanStyle(
+                        fontFamily = FontFamily.Monospace,
+                        background = Color(0xFF363636),
+                        color = Color(0xFFE0E0E0)
+                    )
+                ) {
+                    append(code.literal)
+                }
+            }
+            is Link -> {
+                val link = child as Link
+                (this as AnnotatedString.Builder).withStyle(
+                    SpanStyle(
+                        color = Color(0xFF58A6FF),
+                        textDecoration = TextDecoration.Underline
+                    )
+                ) {
+                    append(link.title ?: link.destination)
+                }
+            }
+            else -> appendNodeText(child)
+        }
+        child = child.next
     }
 }
 
@@ -389,22 +544,43 @@ fun BranchSelectorDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Select Branch") },
+        title = { 
+            Text(
+                text = "Select Branch",
+                style = MaterialTheme.typography.titleMedium
+            )
+        },
         text = {
             LazyColumn {
                 items(branches, key = { it.name }) { branch ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onBranchSelected(branch.name) },
+                            .clickable { onBranchSelected(branch.name) }
+                            .padding(vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        RadioButton(
-                            selected = branch.name == selectedBranch,
-                            onClick = { onBranchSelected(branch.name) }
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(branch.name)
+                        if (branch.name == selectedBranch) {
+                            Icon(
+                                Icons.Default.Check,
+                                contentDescription = "Selected",
+                                modifier = Modifier.size(20.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = branch.name,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.width(28.dp))
+                            Text(
+                                text = branch.name,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
                     }
                 }
             }

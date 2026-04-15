@@ -79,10 +79,20 @@ class RepositoryViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val readme = repositoryRepository.getReadme(owner, repo, _state.value.selectedBranch)
-                _state.update { it.copy(readme = readme.content) }
+                val decodedContent = readme.content?.let { decodeBase64(it) }
+                _state.update { it.copy(readme = decodedContent) }
             } catch (e: Exception) {
                 // README may not exist
             }
+        }
+    }
+    
+    private fun decodeBase64(encoded: String): String {
+        return try {
+            val cleaned = encoded.replace("\n", "").trim()
+            java.util.Base64.getDecoder().decode(cleaned).toString(Charsets.UTF_8)
+        } catch (e: Exception) {
+            encoded
         }
     }
     

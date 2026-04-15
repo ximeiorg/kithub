@@ -82,6 +82,7 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
 
     implementation(libs.datastore.preferences)
+    implementation(libs.commonmark)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
