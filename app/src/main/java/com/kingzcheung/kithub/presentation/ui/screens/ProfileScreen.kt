@@ -37,9 +37,13 @@ fun ProfileScreen(
     var showLogoutDialog by remember { mutableStateOf(false) }
     
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { Text("Profile") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
                 actions = {
                     IconButton(onClick = { showLogoutDialog = true }) {
                         Icon(Icons.Default.Logout, contentDescription = "Logout")
@@ -69,7 +73,7 @@ fun ProfileScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item {
@@ -78,16 +82,18 @@ fun ProfileScreen(
                     
                     if (state.pinnedRepos.isNotEmpty()) {
                         item {
-                            Text(
-                                text = "Pinned Repositories",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            PinnedReposRow(
-                                repos = state.pinnedRepos,
-                                onRepoClick = { }
-                            )
+                            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                Text(
+                                    text = "Pinned Repositories",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                PinnedReposRow(
+                                    repos = state.pinnedRepos,
+                                    onRepoClick = { }
+                                )
+                            }
                         }
                     }
                     
@@ -98,22 +104,28 @@ fun ProfileScreen(
                             starredCount = 0,
                             onReposClick = { },
                             onOrgsClick = { },
-                            onStarredClick = { }
+                            onStarredClick = { },
+                            modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }
                     
                     if (state.events.isNotEmpty()) {
                         item {
-                            Text(
-                                text = "Contribution Activity",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                Text(
+                                    text = "Contribution Activity",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
                         }
                         
                         items(state.events, key = { it.id }) { event ->
-                            EventItem(event = event)
+                            EventItem(
+                                event = event,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
                         }
                     }
                 }
@@ -231,61 +243,69 @@ fun ProfileUserInfo(
     user: com.kingzcheung.kithub.domain.model.User,
     modifier: Modifier = Modifier
 ) {
-    Row(
+    Surface(
         modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        color = MaterialTheme.colorScheme.surface
     ) {
-        UserAvatar(avatarUrl = user.avatarUrl, size = 80)
-        Spacer(modifier = Modifier.width(16.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = user.name ?: user.login,
-                style = MaterialTheme.typography.headlineSmall
-            )
-            Text(
-                text = user.login,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            if (user.bio != null) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = user.bio,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                UserAvatar(avatarUrl = user.avatarUrl, size = 80)
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = user.name ?: user.login,
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                    Text(
+                        text = user.login,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    if (user.bio != null) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = user.bio,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
             }
+            
+            if (user.email != null && user.email.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Email,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = user.email,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                StatItem(label = "Followers", count = user.followers)
+                StatItem(label = "Following", count = user.following)
+                StatItem(label = "Repos", count = user.publicRepos)
+            }
+            Spacer(modifier = Modifier.height(8.dp))
         }
-    }
-    
-    if (user.email != null && user.email.isNotEmpty()) {
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = Icons.Default.Email,
-                contentDescription = null,
-                modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = user.email,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-    
-    Spacer(modifier = Modifier.height(12.dp))
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
-        StatItem(label = "Followers", count = user.followers)
-        StatItem(label = "Following", count = user.following)
-        StatItem(label = "Repos", count = user.publicRepos)
     }
 }
 
@@ -324,7 +344,10 @@ fun ProfileMenuCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             ProfileMenuRow(
@@ -401,7 +424,10 @@ fun EventItem(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Row(
             modifier = Modifier

@@ -26,6 +26,9 @@ import com.kingzcheung.kithub.presentation.ui.screens.*
 import com.kingzcheung.kithub.presentation.viewmodel.AuthViewModel
 import com.kingzcheung.kithub.presentation.viewmodel.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.net.URLEncoder
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -146,6 +149,7 @@ fun KithubApp() {
                         onNavigateToIssues = { navController.navigate("issues/$owner/$repo") },
                         onNavigateToPullRequests = { navController.navigate("pulls/$owner/$repo") },
                         onNavigateToCommits = { navController.navigate("commits/$owner/$repo") },
+                        onNavigateToCode = { navController.navigate("code/$owner/$repo") },
                         onNavigateToUser = { username ->
                             navController.navigate("user/$username")
                         }
@@ -239,6 +243,43 @@ fun KithubApp() {
                     )
                 ) {
                     CommitDetailScreen()
+                }
+                
+                composable(
+                    "code/{owner}/{repo}",
+                    arguments = listOf(
+                        navArgument("owner") { type = NavType.StringType },
+                        navArgument("repo") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val owner = backStackEntry.arguments?.getString("owner") ?: ""
+                    val repo = backStackEntry.arguments?.getString("repo") ?: ""
+                    CodeBrowserScreen(
+                        onNavigateBack = { navController.navigateUp() },
+                        onNavigateToFile = { path ->
+                            val encodedPath = URLEncoder.encode(path, StandardCharsets.UTF_8.name())
+                            navController.navigate("file/$owner/$repo/$encodedPath")
+                        }
+                    )
+                }
+                
+                composable(
+                    "code/{owner}/{repo}/{path}",
+                    arguments = listOf(
+                        navArgument("owner") { type = NavType.StringType },
+                        navArgument("repo") { type = NavType.StringType },
+                        navArgument("path") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val owner = backStackEntry.arguments?.getString("owner") ?: ""
+                    val repo = backStackEntry.arguments?.getString("repo") ?: ""
+                    CodeBrowserScreen(
+                        onNavigateBack = { navController.navigateUp() },
+                        onNavigateToFile = { path ->
+                            val encodedPath = URLEncoder.encode(path, StandardCharsets.UTF_8.name())
+                            navController.navigate("file/$owner/$repo/$encodedPath")
+                        }
+                    )
                 }
                 
                 composable(

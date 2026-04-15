@@ -41,6 +41,7 @@ fun RepositoryScreen(
     onNavigateToIssues: () -> Unit = {},
     onNavigateToPullRequests: () -> Unit = {},
     onNavigateToCommits: () -> Unit = {},
+    onNavigateToCode: () -> Unit = {},
     onNavigateToUser: (String) -> Unit = {},
     viewModel: RepositoryViewModel = hiltViewModel()
 ) {
@@ -74,7 +75,7 @@ fun RepositoryScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         }
@@ -126,78 +127,85 @@ fun RepositoryScreen(
                     .fillMaxSize()
                     .padding(padding)
                     .background(MaterialTheme.colorScheme.background),
-                contentPadding = PaddingValues(vertical = 12.dp)
+                contentPadding = PaddingValues(bottom = 16.dp)
             ) {
                 item {
-                    Column(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.surface
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
+                        Column(
+                            modifier = Modifier.padding(16.dp)
                         ) {
-                            Box(
-                                modifier = Modifier.clickable { onNavigateToUser(repo.owner.login) }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                UserAvatar(
-                                    avatarUrl = repo.owner.avatarUrl,
-                                    size = 40
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Column {
-                                Text(
-                                    text = repo.fullName,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                if (repo.description != null) {
-                                    Text(
-                                        text = repo.description,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        maxLines = 2
+                                Box(
+                                    modifier = Modifier.clickable { onNavigateToUser(repo.owner.login) }
+                                ) {
+                                    UserAvatar(
+                                        avatarUrl = repo.owner.avatarUrl,
+                                        size = 40
                                     )
                                 }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text(
+                                        text = repo.fullName,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    if (repo.description != null) {
+                                        Text(
+                                            text = repo.description,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 2
+                                        )
+                                    }
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(12.dp))
+                            
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                IconText(
+                                    icon = Icons.Default.Star,
+                                    text = "${repo.stargazersCount}",
+                                    textStyle = MaterialTheme.typography.labelSmall
+                                )
+                                IconText(
+                                    icon = Icons.Default.CallSplit,
+                                    text = "${repo.forksCount}",
+                                    textStyle = MaterialTheme.typography.labelSmall
+                                )
+                                IconText(
+                                    icon = Icons.Default.ErrorOutline,
+                                    text = "${repo.openIssuesCount}",
+                                    textStyle = MaterialTheme.typography.labelSmall
+                                )
+                            }
+                            
+                            repo.language?.let { lang ->
+                                Spacer(modifier = Modifier.height(6.dp))
+                                LanguageBadge(language = lang)
+                            }
+                            
+                            repo.license?.let { license ->
+                                Spacer(modifier = Modifier.height(6.dp))
+                                IconText(
+                                    icon = Icons.Default.Gavel,
+                                    text = license.name,
+                                    textStyle = MaterialTheme.typography.labelSmall
+                                )
                             }
                         }
-                        
-                        Spacer(modifier = Modifier.height(12.dp))
-                        
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            IconText(
-                                icon = Icons.Default.Star,
-                                text = "${repo.stargazersCount}",
-                                textStyle = MaterialTheme.typography.labelSmall
-                            )
-                            IconText(
-                                icon = Icons.Default.CallSplit,
-                                text = "${repo.forksCount}",
-                                textStyle = MaterialTheme.typography.labelSmall
-                            )
-                            IconText(
-                                icon = Icons.Default.ErrorOutline,
-                                text = "${repo.openIssuesCount}",
-                                textStyle = MaterialTheme.typography.labelSmall
-                            )
-                        }
-                        
-                        repo.language?.let { lang ->
-                            Spacer(modifier = Modifier.height(6.dp))
-                            LanguageBadge(language = lang)
-                        }
-                        
-                        repo.license?.let { license ->
-                            Spacer(modifier = Modifier.height(6.dp))
-                            IconText(
-                                icon = Icons.Default.Gavel,
-                                text = license.name,
-                                textStyle = MaterialTheme.typography.labelSmall
-                            )
-                        }
                     }
-                    
+                }
+                
+                item {
                     Spacer(modifier = Modifier.height(8.dp))
                 }
                 
@@ -248,34 +256,20 @@ fun RepositoryScreen(
                 
                 item {
                     Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.surface,
                         onClick = { showBranchSelector = true }
                     ) {
                         Row(
-                            modifier = Modifier.padding(16.dp),
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = MaterialTheme.colorScheme.primaryContainer,
-                                modifier = Modifier.size(32.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        Icons.Outlined.Source,
-                                        contentDescription = "Branch",
-                                        modifier = Modifier.size(18.dp),
-                                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                                    )
-                                }
-                            }
+                            Icon(
+                                Icons.Outlined.Source,
+                                contentDescription = "Branch",
+                                modifier = Modifier.size(20.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
                                 text = state.selectedBranch,
@@ -291,15 +285,13 @@ fun RepositoryScreen(
                             )
                         }
                     }
-                    
-                    Spacer(modifier = Modifier.height(12.dp))
                 }
                 
                 item {
                     RepositoryMenuItem(
                         icon = Icons.Outlined.Folder,
                         title = "Code",
-                        onClick = { /* Navigate to code browser */ }
+                        onClick = onNavigateToCode
                     )
                 }
                 
@@ -366,7 +358,7 @@ fun RepositoryMenuItem(
     Surface(
         modifier = modifier.fillMaxWidth(),
         onClick = onClick,
-        color = Color.Transparent
+        color = MaterialTheme.colorScheme.surface
     ) {
         Row(
             modifier = Modifier

@@ -199,7 +199,7 @@ fun BottomNavItemView(
             .clip(CircleShape)
             .background(backgroundColor)
             .clickable { onClick() }
-            .height(48.dp),
+            .height(44.dp),
         contentAlignment = Alignment.Center
     ) {
         Row(

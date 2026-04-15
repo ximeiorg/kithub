@@ -2,14 +2,18 @@ package com.kingzcheung.kithub.presentation.ui.screens
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,11 +45,15 @@ fun AuthScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.Code,
+            val isDark = isSystemInDarkTheme()
+            
+            Image(
+                painter = painterResource(
+                    id = if (isDark) com.kingzcheung.kithub.R.drawable.icon_dark
+                          else com.kingzcheung.kithub.R.drawable.icon_light
+                ),
                 contentDescription = "Kithub Logo",
-                modifier = Modifier.size(80.dp),
-                tint = MaterialTheme.colorScheme.primary
+                modifier = Modifier.size(80.dp)
             )
             
             Spacer(modifier = Modifier.height(16.dp))

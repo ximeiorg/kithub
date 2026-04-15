@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 data class FileViewerState(
     val content: Content? = null,
@@ -33,7 +35,7 @@ class FileViewerViewModel @Inject constructor(
     
     private val owner: String = savedStateHandle["owner"] ?: ""
     private val repo: String = savedStateHandle["repo"] ?: ""
-    private val path: String = savedStateHandle["path"] ?: ""
+    private val path: String = URLDecoder.decode(savedStateHandle["path"] ?: "", StandardCharsets.UTF_8.name())
     private val branch: String? = savedStateHandle["branch"]
     
     private val _state = MutableStateFlow(FileViewerState())
