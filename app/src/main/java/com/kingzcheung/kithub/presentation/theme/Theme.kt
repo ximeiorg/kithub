@@ -45,7 +45,7 @@ private val GreenLightColorScheme = lightColorScheme(
     onError = Color.White,
     errorContainer = Color(0xFFFFDAD6),
     onErrorContainer = Color(0xFF410002),
-    background = Color(0xFFF5F5F5),
+    background = Color(0xFFFFFFFF),
     onBackground = Color(0xFF1A1C1E),
     surface = Color.White,
     onSurface = Color(0xFF1A1C1E),
@@ -57,7 +57,7 @@ private val GreenLightColorScheme = lightColorScheme(
     inverseOnSurface = Color(0xFFF1F0F4),
     inversePrimary = Color(0xFF9FD6A6),
     surfaceTint = Color(0xFF2EA043),
-    surfaceContainerHighest = Color(0xFFF5F5F5)
+    surfaceContainerHighest = Color(0xFFFFFFFF)
 )
 
 private val GreenDarkColorScheme = darkColorScheme(
@@ -184,7 +184,7 @@ private fun generateColorSchemeFromSeed(seedColor: Color, darkTheme: Boolean): a
             onError = Color.White,
             errorContainer = Color(0xFFFFDAD6),
             onErrorContainer = Color(0xFF410002),
-            background = Color(0xFFF5F5F5),
+            background = Color(0xFFFFFFFF),
             onBackground = Color(0xFF1A1C1E),
             surface = Color.White,
             onSurface = Color(0xFF1A1C1E),
