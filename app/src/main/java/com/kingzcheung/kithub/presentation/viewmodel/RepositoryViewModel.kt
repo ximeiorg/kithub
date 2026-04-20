@@ -25,6 +25,7 @@ data class RepositoryState(
     val commits: List<CommitBrief> = emptyList(),
     val branches: List<Branch> = emptyList(),
     val selectedBranch: String = "main",
+    val languages: Map<String, Int> = emptyMap(),
     val loading: Boolean = true,
     val error: String? = null,
     val isStarred: Boolean = false,
@@ -57,6 +58,7 @@ class RepositoryViewModel @Inject constructor(
                 val repository = repositoryRepository.getRepository(owner, repo)
                 val branches = repositoryRepository.getBranches(owner, repo)
                 val contents = repositoryRepository.getContents(owner, repo, "", repository.defaultBranch)
+                val languages = repositoryRepository.getLanguages(owner, repo)
                 
                 _state.update {
                     it.copy(
@@ -64,6 +66,7 @@ class RepositoryViewModel @Inject constructor(
                         branches = branches,
                         selectedBranch = repository.defaultBranch,
                         contents = contents,
+                        languages = languages,
                         loading = false
                     )
                 }

@@ -214,6 +214,39 @@ interface GitHubApi {
     
     @DELETE("notifications/threads/{thread_id}")
     suspend fun markThreadAsDone(@Path("thread_id") threadId: Int)
+    
+    @GET("repos/{owner}/{repo}/actions/workflows")
+    suspend fun getWorkflows(
+        @Path("owner") owner: String,
+        @Path("repo") repo: String,
+        @Query("per_page") perPage: Int = 30,
+        @Query("page") page: Int = 1
+    ): WorkflowListDto
+    
+    @GET("repos/{owner}/{repo}/actions/workflows/{workflow_id}/runs")
+    suspend fun getWorkflowRuns(
+        @Path("owner") owner: String,
+        @Path("repo") repo: String,
+        @Path("workflow_id") workflowId: String,
+        @Query("status") status: String? = null,
+        @Query("per_page") perPage: Int = 30,
+        @Query("page") page: Int = 1
+    ): WorkflowRunListDto
+    
+    @GET("repos/{owner}/{repo}/contributors")
+    suspend fun getContributors(
+        @Path("owner") owner: String,
+        @Path("repo") repo: String,
+        @Query("anon") anon: String? = null,
+        @Query("per_page") perPage: Int = 30,
+        @Query("page") page: Int = 1
+    ): List<ContributorDto>
+    
+    @GET("repos/{owner}/{repo}/languages")
+    suspend fun getLanguages(
+        @Path("owner") owner: String,
+        @Path("repo") repo: String
+    ): Map<String, Int>
 }
 
 interface GitHubAuthApi {

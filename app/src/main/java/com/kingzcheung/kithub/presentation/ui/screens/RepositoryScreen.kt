@@ -36,6 +36,8 @@ fun RepositoryScreen(
     onNavigateToPullRequests: () -> Unit = {},
     onNavigateToCommits: () -> Unit = {},
     onNavigateToCode: () -> Unit = {},
+    onNavigateToActions: () -> Unit = {},
+    onNavigateToContributors: () -> Unit = {},
     onNavigateToUser: (String) -> Unit = {},
     viewModel: RepositoryViewModel = hiltViewModel()
 ) {
@@ -123,7 +125,7 @@ fun RepositoryScreen(
                     .background(MaterialTheme.colorScheme.background),
                 contentPadding = PaddingValues(bottom = 16.dp)
             ) {
-                item {
+item {
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         color = MaterialTheme.colorScheme.surface
@@ -182,11 +184,6 @@ fun RepositoryScreen(
                                 )
                             }
                             
-                            repo.language?.let { lang ->
-                                Spacer(modifier = Modifier.height(6.dp))
-                                LanguageBadge(language = lang)
-                            }
-                            
                             repo.license?.let { license ->
                                 Spacer(modifier = Modifier.height(6.dp))
                                 IconText(
@@ -194,6 +191,61 @@ fun RepositoryScreen(
                                     text = license.name,
                                     textStyle = MaterialTheme.typography.labelSmall
                                 )
+                            }
+                            
+                            if (state.languages.isNotEmpty()) {
+                                val totalBytes = state.languages.values.sum()
+                                val sortedLanguages = state.languages.entries.sortedByDescending { it.value }
+                                
+                                Spacer(modifier = Modifier.height(12.dp))
+                                
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(6.dp)
+                                        .clip(RoundedCornerShape(3.dp))
+                                ) {
+                                    sortedLanguages.forEach { (language, bytes) ->
+                                        val percentage = (bytes.toFloat() / totalBytes.toFloat())
+                                        val color = getLanguageColor(language)
+                                        
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(percentage)
+                                                .fillMaxHeight()
+                                                .background(color)
+                                        )
+                                    }
+                                }
+                                
+                                Spacer(modifier = Modifier.height(8.dp))
+                                
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    sortedLanguages.take(5).forEach { (language, bytes) ->
+                                        val percentage = (bytes.toFloat() / totalBytes.toFloat() * 100).toInt()
+                                        val color = getLanguageColor(language)
+                                        
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(10.dp)
+                                                    .clip(RoundedCornerShape(2.dp))
+                                                    .background(color)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = "$language $percentage%",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -224,15 +276,7 @@ fun RepositoryScreen(
                     RepositoryMenuItem(
                         icon = Icons.Outlined.PlayArrow,
                         title = "Actions",
-                        onClick = { /* TODO */ }
-                    )
-                }
-                
-                item {
-                    RepositoryMenuItem(
-                        icon = Icons.Outlined.MenuBook,
-                        title = "Wiki",
-                        onClick = { /* TODO */ }
+                        onClick = onNavigateToActions
                     )
                 }
                 
@@ -240,7 +284,7 @@ fun RepositoryScreen(
                     RepositoryMenuItem(
                         icon = Icons.Outlined.People,
                         title = "Contributors",
-                        onClick = { /* TODO */ }
+                        onClick = onNavigateToContributors
                     )
                 }
                 
@@ -399,6 +443,37 @@ fun RepositoryMenuItem(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
             )
         }
+    }
+}
+
+fun getLanguageColor(language: String): Color {
+    return when (language.lowercase()) {
+        "kotlin" -> Color(0xFFA97BFF)
+        "java" -> Color(0xFFB07219)
+        "python" -> Color(0xFF3572A5)
+        "javascript" -> Color(0xFFF1E05A)
+        "typescript" -> Color(0xFF2B7489)
+        "c" -> Color(0xFF555555)
+        "c++" -> Color(0xFFF34B7D)
+        "c#" -> Color(0xFF178600)
+        "go" -> Color(0xFF00ADD8)
+        "rust" -> Color(0xFFDEA584)
+        "swift" -> Color(0xFFFF563D)
+        "objective-c" -> Color(0xFF438EFF)
+        "ruby" -> Color(0xFF701516)
+        "php" -> Color(0xFF4F5D95)
+        "scala" -> Color(0xFFC22D40)
+        "dart" -> Color(0xFF00B4AB)
+        "flutter" -> Color(0xFF00B4AB)
+        "html" -> Color(0xFFE44B23)
+        "css" -> Color(0xFF563D7C)
+        "shell" -> Color(0xFF89E051)
+        "bash" -> Color(0xFF89E051)
+        "json" -> Color(0xFF292929)
+        "yaml" -> Color(0xFFCB171E)
+        "markdown" -> Color(0xFF083FA1)
+        "sql" -> Color(0xFFE38C00)
+        else -> Color(0xFFCCCCCC)
     }
 }
 

@@ -68,6 +68,9 @@ class RepositoryRepository @Inject constructor(
     suspend fun getReadme(owner: String, repo: String, ref: String? = null): Content =
         api.getReadme(owner, repo, ref).toDomain()
     
+    suspend fun getLanguages(owner: String, repo: String): Map<String, Int> =
+        api.getLanguages(owner, repo)
+    
     suspend fun starRepo(owner: String, repo: String) = api.starRepo(owner, repo)
     
     suspend fun unstarRepo(owner: String, repo: String) = api.unstarRepo(owner, repo)
@@ -147,4 +150,34 @@ class NotificationRepository @Inject constructor(
     
     suspend fun markThreadAsDone(threadId: Int) =
         api.markThreadAsDone(threadId)
+}
+
+@Singleton
+class WorkflowRepository @Inject constructor(
+    private val api: GitHubApi
+) {
+    suspend fun getWorkflows(owner: String, repo: String, page: Int = 1): WorkflowList =
+        api.getWorkflows(owner, repo, page = page).toDomain()
+    
+    suspend fun getWorkflowRuns(
+        owner: String,
+        repo: String,
+        workflowId: String,
+        status: String? = null,
+        page: Int = 1
+    ): WorkflowRunList =
+        api.getWorkflowRuns(owner, repo, workflowId, status, page = page).toDomain()
+}
+
+@Singleton
+class ContributorRepository @Inject constructor(
+    private val api: GitHubApi
+) {
+    suspend fun getContributors(
+        owner: String,
+        repo: String,
+        anon: Boolean = false,
+        page: Int = 1
+    ): List<Contributor> =
+        api.getContributors(owner, repo, if (anon) "1" else null, page = page).map { it.toDomain() }
 }

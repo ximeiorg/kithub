@@ -4,10 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -62,26 +63,26 @@ fun KithubApp() {
                 navController = navController,
                 startDestination = if (authState.isAuthenticated) "main" else "auth",
                 enterTransition = {
-                    slideIntoContainer(
-                        towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                    slideInHorizontally(
+                        initialOffsetX = { it },
                         animationSpec = tween(300)
                     )
                 },
                 exitTransition = {
-                    slideOutOfContainer(
-                        towards = AnimatedContentTransitionScope.SlideDirection.End,
+                    slideOutHorizontally(
+                        targetOffsetX = { -it },
                         animationSpec = tween(300)
                     )
                 },
                 popEnterTransition = {
-                    slideIntoContainer(
-                        towards = AnimatedContentTransitionScope.SlideDirection.End,
+                    slideInHorizontally(
+                        initialOffsetX = { -it },
                         animationSpec = tween(300)
                     )
                 },
                 popExitTransition = {
-                    slideOutOfContainer(
-                        towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                    slideOutHorizontally(
+                        targetOffsetX = { it },
                         animationSpec = tween(300)
                     )
                 }
@@ -150,6 +151,8 @@ fun KithubApp() {
                         onNavigateToPullRequests = { navController.navigate("pulls/$owner/$repo") },
                         onNavigateToCommits = { navController.navigate("commits/$owner/$repo") },
                         onNavigateToCode = { navController.navigate("code/$owner/$repo") },
+                        onNavigateToActions = { navController.navigate("actions/$owner/$repo") },
+                        onNavigateToContributors = { navController.navigate("contributors/$owner/$repo") },
                         onNavigateToUser = { username ->
                             navController.navigate("user/$username")
                         }
@@ -202,6 +205,47 @@ fun KithubApp() {
                             navController.navigate("commit/$owner/$repo/$sha")
                         }
                     )
+                }
+                
+                composable(
+                    "actions/{owner}/{repo}",
+                    arguments = listOf(
+                        navArgument("owner") { type = NavType.StringType },
+                        navArgument("repo") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val owner = backStackEntry.arguments?.getString("owner") ?: ""
+                    val repo = backStackEntry.arguments?.getString("repo") ?: ""
+                    WorkflowsListScreen(
+                        onNavigateToWorkflowRuns = { workflowId ->
+                            navController.navigate("workflow_runs/$owner/$repo/$workflowId")
+                        }
+                    )
+                }
+                
+                composable(
+                    "contributors/{owner}/{repo}",
+                    arguments = listOf(
+                        navArgument("owner") { type = NavType.StringType },
+                        navArgument("repo") { type = NavType.StringType }
+                    )
+                ) {
+                    ContributorsListScreen(
+                        onNavigateToUser = { username ->
+                            navController.navigate("user/$username")
+                        }
+                    )
+                }
+                
+                composable(
+                    "workflow_runs/{owner}/{repo}/{workflowId}",
+                    arguments = listOf(
+                        navArgument("owner") { type = NavType.StringType },
+                        navArgument("repo") { type = NavType.StringType },
+                        navArgument("workflowId") { type = NavType.StringType }
+                    )
+                ) {
+                    WorkflowRunsListScreen()
                 }
                 
                 composable(
