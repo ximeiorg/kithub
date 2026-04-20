@@ -39,6 +39,7 @@ import kotlinx.coroutines.flow.debounce
 @OptIn(ExperimentalMaterial3Api::class, FlowPreview::class, ExperimentalComposeUiApi::class)
 @Composable
 fun SearchScreen(
+    onNavigateBack: () -> Unit,
     onNavigateToRepository: (String, String) -> Unit,
     onNavigateToUser: (String) -> Unit,
     onNavigateToIssue: (String, String, Int) -> Unit = { _, _, _ -> },
@@ -66,60 +67,78 @@ fun SearchScreen(
         }
     }
     
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surface
-        ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-            ) {
-                SearchBar(
-                    query = searchQuery,
-                    onQueryChange = { searchQuery = it },
-                    onSearch = {
-                        if (searchQuery.isNotEmpty()) {
-                            viewModel.search(searchQuery)
-                            keyboardController?.hide()
-                            focusManager.clearFocus()
-                        }
-                    },
-                    isFocused = isFocused,
-                    interactionSource = interactionSource,
-                    modifier = Modifier.fillMaxWidth()
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Search") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
-                
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                SearchTypeChips(
-                    selectedType = state.searchType,
-                    onTypeSelected = { viewModel.setSearchType(it) },
-                    modifier = Modifier.fillMaxWidth()
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    SearchBar(
+                        query = searchQuery,
+                        onQueryChange = { searchQuery = it },
+                        onSearch = {
+                            if (searchQuery.isNotEmpty()) {
+                                viewModel.search(searchQuery)
+                                keyboardController?.hide()
+                                focusManager.clearFocus()
+                            }
+                        },
+                        isFocused = isFocused,
+                        interactionSource = interactionSource,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    SearchTypeChips(
+                        selectedType = state.searchType,
+                        onTypeSelected = { viewModel.setSearchType(it) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+            
+            if (state.loading && state.repositories.isEmpty() && state.users.isEmpty() && state.issues.isEmpty()) {
+                LoadingIndicator(modifier = Modifier.fillMaxSize())
+            } else if (searchQuery.isEmpty()) {
+                SearchEmptyState(modifier = Modifier.fillMaxSize())
+            } else {
+                SearchResultsList(
+                    searchType = state.searchType,
+                    repositories = state.repositories,
+                    users = state.users,
+                    issues = state.issues,
+                    totalCount = state.totalCount,
+                    hasMore = state.hasMore,
+                    isLoadingMore = state.isLoadingMore,
+                    onLoadMore = { viewModel.loadMore() },
+                    onRepoClick = onNavigateToRepository,
+                    onUserClick = onNavigateToUser,
+                    onIssueClick = onNavigateToIssue,
+                    error = state.error
                 )
             }
-        }
-        
-        if (state.loading && state.repositories.isEmpty() && state.users.isEmpty() && state.issues.isEmpty()) {
-            LoadingIndicator(modifier = Modifier.fillMaxSize())
-        } else if (searchQuery.isEmpty()) {
-            SearchEmptyState(modifier = Modifier.fillMaxSize())
-        } else {
-            SearchResultsList(
-                searchType = state.searchType,
-                repositories = state.repositories,
-                users = state.users,
-                issues = state.issues,
-                totalCount = state.totalCount,
-                hasMore = state.hasMore,
-                isLoadingMore = state.isLoadingMore,
-                onLoadMore = { viewModel.loadMore() },
-                onRepoClick = onNavigateToRepository,
-                onUserClick = onNavigateToUser,
-                onIssueClick = onNavigateToIssue,
-                error = state.error
-            )
         }
     }
 }

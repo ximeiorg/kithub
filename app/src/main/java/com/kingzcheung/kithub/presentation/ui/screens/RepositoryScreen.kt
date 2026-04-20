@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,7 +27,7 @@ import com.kingzcheung.kithub.presentation.ui.components.*
 import com.kingzcheung.kithub.presentation.ui.components.MarkwonText
 import com.kingzcheung.kithub.presentation.viewmodel.RepositoryViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun RepositoryScreen(
     owner: String,
@@ -61,8 +62,9 @@ fun RepositoryScreen(
                         }
                         IconButton(onClick = { viewModel.toggleStar() }) {
                             Icon(
-                                imageVector = if (state.isStarred) Icons.Default.Star else Icons.Default.StarBorder,
-                                contentDescription = "Star"
+                                imageVector = if (state.isStarred) Icons.Rounded.Star else Icons.Rounded.StarBorder,
+                                contentDescription = "Star",
+                                tint = if (state.isStarred) Color(0xFFFFA726) else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         IconButton(onClick = { /* TODO: Share */ }) {
@@ -168,7 +170,7 @@ item {
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 IconText(
-                                    icon = Icons.Default.Star,
+                                    icon = Icons.Rounded.Star,
                                     text = "${repo.stargazersCount}",
                                     textStyle = MaterialTheme.typography.labelSmall
                                 )
@@ -220,9 +222,10 @@ item {
                                 
                                 Spacer(modifier = Modifier.height(8.dp))
                                 
-                                Row(
+                                FlowRow(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     sortedLanguages.take(5).forEach { (language, bytes) ->
                                         val percentage = (bytes.toFloat() / totalBytes.toFloat() * 100).toInt()
@@ -241,7 +244,8 @@ item {
                                             Text(
                                                 text = "$language $percentage%",
                                                 style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                maxLines = 1
                                             )
                                         }
                                     }

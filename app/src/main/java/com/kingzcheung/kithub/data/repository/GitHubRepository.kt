@@ -4,6 +4,8 @@ import com.kingzcheung.kithub.data.remote.api.GitHubApi
 import com.kingzcheung.kithub.data.remote.api.SearchResult
 import com.kingzcheung.kithub.data.remote.dto.MarkReadRequest
 import com.kingzcheung.kithub.domain.model.*
+import retrofit2.HttpException
+import retrofit2.Response
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,6 +25,9 @@ class UserRepository @Inject constructor(
     
     suspend fun getStarredRepos(username: String, page: Int = 1): List<Repository> =
         api.getStarredRepos(username, page).map { it.toDomain() }
+    
+    suspend fun getCurrentUserStarredRepos(page: Int = 1): List<Repository> =
+        api.getCurrentUserStarredRepos(page).map { it.toDomain() }
     
     suspend fun getFollowers(username: String, page: Int = 1): List<UserBrief> =
         api.getFollowers(username, page).map { it.toDomain() }
@@ -74,6 +79,15 @@ class RepositoryRepository @Inject constructor(
     suspend fun starRepo(owner: String, repo: String) = api.starRepo(owner, repo)
     
     suspend fun unstarRepo(owner: String, repo: String) = api.unstarRepo(owner, repo)
+    
+    suspend fun checkIfStarred(owner: String, repo: String): Boolean {
+        return try {
+            val response = api.checkIfRepoIsStarred(owner, repo)
+            response.isSuccessful
+        } catch (e: HttpException) {
+            if (e.code() == 404) false else throw e
+        }
+    }
     
     suspend fun searchRepositories(query: String, page: Int = 1): SearchResult<Repository> {
         val result = api.searchRepositories(query, page = page)

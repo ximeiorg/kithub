@@ -59,6 +59,7 @@ class RepositoryViewModel @Inject constructor(
                 val branches = repositoryRepository.getBranches(owner, repo)
                 val contents = repositoryRepository.getContents(owner, repo, "", repository.defaultBranch)
                 val languages = repositoryRepository.getLanguages(owner, repo)
+                val isStarred = repositoryRepository.checkIfStarred(owner, repo)
                 
                 _state.update {
                     it.copy(
@@ -67,6 +68,7 @@ class RepositoryViewModel @Inject constructor(
                         selectedBranch = repository.defaultBranch,
                         contents = contents,
                         languages = languages,
+                        isStarred = isStarred,
                         loading = false
                     )
                 }
@@ -156,12 +158,27 @@ class RepositoryViewModel @Inject constructor(
     fun toggleStar() {
         viewModelScope.launch {
             try {
+                val currentRepo = _state.value.repository
                 if (_state.value.isStarred) {
                     repositoryRepository.unstarRepo(owner, repo)
-                    _state.update { it.copy(isStarred = false) }
+                    _state.update { 
+                        it.copy(
+                            isStarred = false,
+                            repository = currentRepo?.copy(
+                                stargazersCount = currentRepo.stargazersCount - 1
+                            )
+                        )
+                    }
                 } else {
                     repositoryRepository.starRepo(owner, repo)
-                    _state.update { it.copy(isStarred = true) }
+                    _state.update { 
+                        it.copy(
+                            isStarred = true,
+                            repository = currentRepo?.copy(
+                                stargazersCount = currentRepo.stargazersCount + 1
+                            )
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 _state.update { it.copy(error = e.message) }

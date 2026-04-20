@@ -9,11 +9,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -32,9 +35,23 @@ fun HomeScreen(
     onNavigateToUser: (String) -> Unit,
     onNavigateToIssues: () -> Unit,
     onNavigateToPullRequests: () -> Unit,
+    onNavigateToSearch: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val pullToRefreshState = rememberPullToRefreshState()
+    
+    LaunchedEffect(pullToRefreshState.isRefreshing) {
+        if (pullToRefreshState.isRefreshing) {
+            viewModel.refresh()
+        }
+    }
+    
+    LaunchedEffect(state.loading) {
+        if (!state.loading) {
+            pullToRefreshState.endRefresh()
+        }
+    }
     
     Scaffold(
         topBar = {
@@ -63,8 +80,8 @@ fun HomeScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.refresh() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                    IconButton(onClick = onNavigateToSearch) {
+                        Icon(Icons.Default.Search, contentDescription = "Search")
                     }
                 }
             )
@@ -113,108 +130,119 @@ fun HomeScreen(
                 }
             }
         } else {
-            LazyColumn(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(paddingValues)
+                    .nestedScroll(pullToRefreshState.nestedScrollConnection)
             ) {
-                item {
-                    QuickAccessSection(
-                        onNavigateToIssues = onNavigateToIssues,
-                        onNavigateToPullRequests = onNavigateToPullRequests
-                    )
-                }
-                
-                if (state.repos.isNotEmpty()) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
                     item {
-                        SectionHeader(
-                            title = "Your Repositories",
-                            icon = Icons.Outlined.Folder,
-                            count = state.repos.size
+                        QuickAccessSection(
+                            onNavigateToIssues = onNavigateToIssues,
+                            onNavigateToPullRequests = onNavigateToPullRequests
                         )
                     }
-                    items(
-                        items = state.repos.take(5),
-                        key = { "repo_${it.id}_${it.name}" }
-                    ) { repo ->
-                        RepositoryCard(
-                            repo = repo,
-                            onClick = { onNavigateToRepository(repo.owner.login, repo.name) }
-                        )
+                    
+                    if (state.repos.isNotEmpty()) {
+                        item {
+                            SectionHeader(
+                                title = "Your Repositories",
+                                icon = Icons.Outlined.Folder,
+                                count = state.repos.size
+                            )
+                        }
+                        items(
+                            items = state.repos.take(5),
+                            key = { "repo_${it.id}_${it.name}" }
+                        ) { repo ->
+                            RepositoryCard(
+                                repo = repo,
+                                onClick = { onNavigateToRepository(repo.owner.login, repo.name) }
+                            )
+                        }
                     }
-                }
-                
-                if (state.starred.isNotEmpty()) {
-                    item {
-                        SectionHeader(
-                            title = "Starred",
-                            icon = Icons.Outlined.Star,
-                            count = state.starred.size
-                        )
+                    
+                    if (state.starred.isNotEmpty()) {
+                        item {
+                            SectionHeader(
+                                title = "Starred",
+                                icon = Icons.Outlined.Star,
+                                count = state.starred.size
+                            )
+                        }
+                        items(
+                            items = state.starred.take(5),
+                            key = { "starred_${it.id}_${it.name}" }
+                        ) { repo ->
+                            RepositoryCard(
+                                repo = repo,
+                                onClick = { onNavigateToRepository(repo.owner.login, repo.name) }
+                            )
+                        }
                     }
-                    items(
-                        items = state.starred.take(5),
-                        key = { "starred_${it.id}_${it.name}" }
-                    ) { repo ->
-                        RepositoryCard(
-                            repo = repo,
-                            onClick = { onNavigateToRepository(repo.owner.login, repo.name) }
-                        )
-                    }
-                }
-                
-                if (state.events.isNotEmpty()) {
-                    item {
-                        SectionHeader(
-                            title = "Recent Activity",
-                            icon = Icons.Outlined.Notifications,
-                            count = state.events.size
-                        )
-                    }
-                    items(
-                        items = state.events,
-                        key = { "event_${it.id}_${it.createdAt}" }
-                    ) { event ->
-                        EventCard(
-                            event = event,
-                            onRepoClick = {
-                                val repoName = event.repo?.name
-                                if (repoName != null) {
-                                    val parts = repoName.split("/")
-                                    if (parts.size == 2) {
-                                        onNavigateToRepository(parts[0], parts[1])
+                    
+                    if (state.events.isNotEmpty()) {
+                        item {
+                            SectionHeader(
+                                title = "Recent Activity",
+                                icon = Icons.Outlined.Notifications,
+                                count = state.events.size
+                            )
+                        }
+                        items(
+                            items = state.events,
+                            key = { "event_${it.id}_${it.createdAt}" }
+                        ) { event ->
+                            EventCard(
+                                event = event,
+                                onRepoClick = {
+                                    val repoName = event.repo?.name
+                                    if (repoName != null) {
+                                        val parts = repoName.split("/")
+                                        if (parts.size == 2) {
+                                            onNavigateToRepository(parts[0], parts[1])
+                                        }
+                                    }
+                                },
+                                onUserClick = {
+                                    event.actor?.login?.let { login ->
+                                        onNavigateToUser(login)
                                     }
                                 }
-                            },
-                            onUserClick = {
-                                event.actor?.login?.let { login ->
-                                    onNavigateToUser(login)
-                                }
-                            }
-                        )
+                            )
+                        }
+                    }
+                    
+                    if (state.orgs.isNotEmpty()) {
+                        item {
+                            SectionHeader(
+                                title = "Organizations",
+                                icon = Icons.Outlined.Groups,
+                                count = state.orgs.size
+                            )
+                        }
+                        items(
+                            items = state.orgs,
+                            key = { "org_${it.id}_${it.login}" }
+                        ) { org ->
+                            OrganizationCard(
+                                org = org,
+                                onClick = { onNavigateToUser(org.login) }
+                            )
+                        }
                     }
                 }
                 
-                if (state.orgs.isNotEmpty()) {
-                    item {
-                        SectionHeader(
-                            title = "Organizations",
-                            icon = Icons.Outlined.Groups,
-                            count = state.orgs.size
-                        )
-                    }
-                    items(
-                        items = state.orgs,
-                        key = { "org_${it.id}_${it.login}" }
-                    ) { org ->
-                        OrganizationCard(
-                            org = org,
-                            onClick = { onNavigateToUser(org.login) }
-                        )
-                    }
-                }
+                PullToRefreshContainer(
+                    state = pullToRefreshState,
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    contentColor = MaterialTheme.colorScheme.primary
+                )
             }
         }
     }

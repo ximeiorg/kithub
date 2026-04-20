@@ -31,7 +31,6 @@ sealed class BottomNavItem(
     val icon: ImageVector
 ) {
     object Home : BottomNavItem("home", "Home", Icons.Default.Home)
-    object Search : BottomNavItem("search", "Search", Icons.Default.Search)
     object Notifications : BottomNavItem("notifications", "Notifications", Icons.Default.Notifications)
     object Profile : BottomNavItem("profile", "Profile", Icons.Default.Person)
     object Settings : BottomNavItem("settings", "Settings", Icons.Default.Settings)
@@ -48,7 +47,6 @@ fun MainScreen(
 ) {
     val navItems = listOf(
         BottomNavItem.Home,
-        BottomNavItem.Search,
         BottomNavItem.Notifications,
         BottomNavItem.Profile,
         BottomNavItem.Settings
@@ -57,23 +55,27 @@ fun MainScreen(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     
+    val shouldShowBottomBar = currentRoute in navItems.map { it.route }
+    
     Scaffold(
         bottomBar = {
-            BottomNavigationBar(
-                items = navItems,
-                currentRoute = currentRoute,
-                onItemClick = { item ->
-                    if (currentRoute != item.route) {
-                        navController.navigate(item.route) {
-                            popUpTo(navController.graph.startDestinationRoute ?: "home") {
-                                saveState = true
+            if (shouldShowBottomBar) {
+                BottomNavigationBar(
+                    items = navItems,
+                    currentRoute = currentRoute,
+                    onItemClick = { item ->
+                        if (currentRoute != item.route) {
+                            navController.navigate(item.route) {
+                                popUpTo(navController.graph.startDestinationRoute ?: "home") {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
                             }
-                            launchSingleTop = true
-                            restoreState = true
                         }
                     }
-                }
-            )
+                )
+            }
         }
     ) { paddingValues ->
         NavHost(
@@ -86,11 +88,13 @@ fun MainScreen(
                     onNavigateToRepository = onNavigateToRepository,
                     onNavigateToUser = onNavigateToUser,
                     onNavigateToIssues = { navController.navigate("issues") },
-                    onNavigateToPullRequests = { navController.navigate("prs") }
+                    onNavigateToPullRequests = { navController.navigate("prs") },
+                    onNavigateToSearch = { navController.navigate("search") }
                 )
             }
-            composable(BottomNavItem.Search.route) {
+            composable("search") {
                 SearchScreen(
+                    onNavigateBack = { navController.popBackStack() },
                     onNavigateToRepository = onNavigateToRepository,
                     onNavigateToUser = onNavigateToUser,
                     onNavigateToIssue = onNavigateToIssue
@@ -102,7 +106,28 @@ fun MainScreen(
             composable(BottomNavItem.Profile.route) {
                 ProfileScreen(
                     onNavigateToUser = onNavigateToUser,
+                    onNavigateToRepos = { navController.navigate("user_repos") },
+                    onNavigateToOrgs = { navController.navigate("user_orgs") },
+                    onNavigateToStarred = { navController.navigate("user_starred") },
                     onLogout = onLogout
+                )
+            }
+            composable("user_repos") {
+                UserReposListScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToRepository = onNavigateToRepository
+                )
+            }
+            composable("user_orgs") {
+                UserOrgsListScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToUser = onNavigateToUser
+                )
+            }
+            composable("user_starred") {
+                UserStarredReposScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToRepository = onNavigateToRepository
                 )
             }
             composable(BottomNavItem.Settings.route) {

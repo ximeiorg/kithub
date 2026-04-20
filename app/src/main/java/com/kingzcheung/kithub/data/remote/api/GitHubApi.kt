@@ -1,6 +1,7 @@
 package com.kingzcheung.kithub.data.remote.api
 
 import com.kingzcheung.kithub.data.remote.dto.*
+import retrofit2.Response
 import retrofit2.http.*
 
 interface GitHubApi {
@@ -116,6 +117,20 @@ interface GitHubApi {
         @Query("page") page: Int = 1,
         @Query("per_page") perPage: Int = 30
     ): List<RepositoryDto>
+    
+    @GET("user/starred")
+    suspend fun getCurrentUserStarredRepos(
+        @Query("page") page: Int = 1,
+        @Query("per_page") perPage: Int = 30,
+        @Query("sort") sort: String = "created",
+        @Query("direction") direction: String = "desc"
+    ): List<RepositoryDto>
+    
+    @HTTP(method = "GET", path = "user/starred/{owner}/{repo}", hasBody = false)
+    suspend fun checkIfRepoIsStarred(
+        @Path("owner") owner: String,
+        @Path("repo") repo: String
+    ): Response<Unit>
     
     @PUT("user/starred/{owner}/{repo}")
     suspend fun starRepo(

@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,6 +31,9 @@ import com.kingzcheung.kithub.presentation.viewmodel.ProfileViewModel
 @Composable
 fun ProfileScreen(
     onNavigateToUser: (String) -> Unit,
+    onNavigateToRepos: () -> Unit,
+    onNavigateToOrgs: () -> Unit,
+    onNavigateToStarred: () -> Unit,
     onLogout: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
@@ -101,10 +105,9 @@ fun ProfileScreen(
                         ProfileMenuCard(
                             reposCount = user.publicRepos,
                             orgsCount = state.orgs.size,
-                            starredCount = 0,
-                            onReposClick = { },
-                            onOrgsClick = { },
-                            onStarredClick = { },
+                            onReposClick = onNavigateToRepos,
+                            onOrgsClick = onNavigateToOrgs,
+                            onStarredClick = onNavigateToStarred,
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }
@@ -230,7 +233,7 @@ fun PinnedRepoCard(
                     LanguageBadge(language = repo.language)
                 }
                 IconText(
-                    icon = Icons.Default.Star,
+                    icon = Icons.Rounded.Star,
                     text = repo.stargazersCount.toString()
                 )
             }
@@ -336,7 +339,6 @@ fun StatItem(
 fun ProfileMenuCard(
     reposCount: Int,
     orgsCount: Int,
-    starredCount: Int,
     onReposClick: () -> Unit,
     onOrgsClick: () -> Unit,
     onStarredClick: () -> Unit,
@@ -365,9 +367,9 @@ fun ProfileMenuCard(
             )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
             ProfileMenuRow(
-                icon = Icons.Default.Star,
+                icon = Icons.Rounded.Star,
                 title = "Starred",
-                count = starredCount,
+                count = null,
                 onClick = onStarredClick
             )
         }
@@ -378,7 +380,7 @@ fun ProfileMenuCard(
 fun ProfileMenuRow(
     icon: ImageVector,
     title: String,
-    count: Int,
+    count: Int?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -402,12 +404,14 @@ fun ProfileMenuRow(
             color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.weight(1f))
-        Text(
-            text = count.toString(),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.width(8.dp))
+        if (count != null) {
+            Text(
+                text = count.toString(),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+        }
         Icon(
             imageVector = Icons.Default.ChevronRight,
             contentDescription = null,
@@ -475,7 +479,7 @@ fun getEventIcon(type: EventType): ImageVector {
         EventType.CreateEvent -> Icons.Default.Add
         EventType.DeleteEvent -> Icons.Default.Delete
         EventType.ForkEvent -> Icons.Default.ForkRight
-        EventType.WatchEvent -> Icons.Default.Star
+        EventType.WatchEvent -> Icons.Rounded.Star
         EventType.IssuesEvent -> Icons.Default.Report
         EventType.IssueCommentEvent -> Icons.Default.Comment
         EventType.PullRequestEvent -> Icons.Default.Merge
