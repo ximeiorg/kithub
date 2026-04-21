@@ -32,6 +32,7 @@ sealed class BottomNavItem(
 ) {
     object Home : BottomNavItem("home", "Home", Icons.Default.Home)
     object Notifications : BottomNavItem("notifications", "Notifications", Icons.Default.Notifications)
+    object Explore : BottomNavItem("explore", "Explore", Icons.Default.Explore)
     object Profile : BottomNavItem("profile", "Profile", Icons.Default.Person)
     object Settings : BottomNavItem("settings", "Settings", Icons.Default.Settings)
 }
@@ -48,8 +49,8 @@ fun MainScreen(
     val navItems = listOf(
         BottomNavItem.Home,
         BottomNavItem.Notifications,
-        BottomNavItem.Profile,
-        BottomNavItem.Settings
+        BottomNavItem.Explore,
+        BottomNavItem.Profile
     )
     
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -103,13 +104,19 @@ fun MainScreen(
             composable(BottomNavItem.Notifications.route) {
                 NotificationsScreen()
             }
+            composable(BottomNavItem.Explore.route) {
+                ExploreScreen(
+                    onNavigateToUser = onNavigateToUser,
+                    onNavigateToRepository = onNavigateToRepository
+                )
+            }
             composable(BottomNavItem.Profile.route) {
                 ProfileScreen(
                     onNavigateToUser = onNavigateToUser,
                     onNavigateToRepos = { navController.navigate("user_repos") },
                     onNavigateToOrgs = { navController.navigate("user_orgs") },
                     onNavigateToStarred = { navController.navigate("user_starred") },
-                    onLogout = onLogout
+                    onNavigateToSettings = { navController.navigate("settings") }
                 )
             }
             composable("user_repos") {

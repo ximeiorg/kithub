@@ -38,6 +38,9 @@ class UserRepository @Inject constructor(
     suspend fun getUserEvents(username: String, page: Int = 1): List<Event> =
         api.getUserEvents(username, page).map { it.toDomain() }
     
+    suspend fun getReceivedEvents(username: String, page: Int = 1): List<Event> =
+        api.getReceivedEvents(username, page).map { it.toDomain() }
+    
     suspend fun getCurrentUserIssues(page: Int = 1): List<Issue> =
         api.getCurrentUserIssues(page = page).map { it.toDomain() }
     

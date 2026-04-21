@@ -34,11 +34,10 @@ fun ProfileScreen(
     onNavigateToRepos: () -> Unit,
     onNavigateToOrgs: () -> Unit,
     onNavigateToStarred: () -> Unit,
-    onLogout: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    var showLogoutDialog by remember { mutableStateOf(false) }
     
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -49,8 +48,8 @@ fun ProfileScreen(
                     containerColor = MaterialTheme.colorScheme.surface
                 ),
                 actions = {
-                    IconButton(onClick = { showLogoutDialog = true }) {
-                        Icon(Icons.Default.Logout, contentDescription = "Logout")
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
                 }
             )
@@ -134,27 +133,6 @@ fun ProfileScreen(
                 }
             }
         }
-    }
-    
-    if (showLogoutDialog) {
-        AlertDialog(
-            onDismissRequest = { showLogoutDialog = false },
-            title = { Text("Logout") },
-            text = { Text("Are you sure you want to logout?") },
-            confirmButton = {
-                Button(onClick = {
-                    showLogoutDialog = false
-                    onLogout()
-                }) {
-                    Text("Logout")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showLogoutDialog = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
     }
 }
 

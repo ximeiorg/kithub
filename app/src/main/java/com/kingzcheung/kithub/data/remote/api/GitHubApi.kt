@@ -165,6 +165,13 @@ interface GitHubApi {
         @Query("per_page") perPage: Int = 30
     ): List<EventDto>
     
+    @GET("users/{username}/received_events")
+    suspend fun getReceivedEvents(
+        @Path("username") username: String,
+        @Query("page") page: Int = 1,
+        @Query("per_page") perPage: Int = 30
+    ): List<EventDto>
+    
     @GET("issues")
     suspend fun getCurrentUserIssues(
         @Query("filter") filter: String = "all",
