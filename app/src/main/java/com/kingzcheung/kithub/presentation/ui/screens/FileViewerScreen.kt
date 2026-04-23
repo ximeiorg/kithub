@@ -132,6 +132,7 @@ fun FileViewerContent(
     val isImage = fileName.endsWith(".png") || fileName.endsWith(".jpg") || 
                  fileName.endsWith(".jpeg") || fileName.endsWith(".gif") || fileName.endsWith(".webp")
     val isCode = !isMarkdown && !isImage
+    val context = LocalContext.current
     
     if (isImage && content.downloadUrl != null) {
         Box(
@@ -140,62 +141,99 @@ fun FileViewerContent(
                 .padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
+            val webView = rememberWebView(context)
+            
+            DisposableEffect(webView) {
+                webView.settings.loadWithOverviewMode = true
+                webView.settings.useWideViewPort = true
+                webView.loadDataWithBaseURL(
+                    null,
+                    "<html><body style='display:flex;justify-content:center;align-items:center;min-height:100%;background:#1e1e1e;'><img src='${content.downloadUrl}' style='max-width:100%;max-height:100%;object-fit:contain;'/></body></html>",
+                    "text/html",
+                    "UTF-8",
+                    null
+                )
+                
+                onDispose {
+                    webView.loadDataWithBaseURL(null, "", "text/html", "UTF-8", null)
+                    webView.clearHistory()
+                    webView.clearCache(true)
+                    webView.onPause()
+                    webView.removeAllViews()
+                    webView.destroy()
+                }
+            }
+            
             AndroidView(
-                factory = { context ->
-                    WebView(context).apply {
-                        webViewClient = WebViewClient()
-                        settings.loadWithOverviewMode = true
-                        settings.useWideViewPort = true
-                        loadDataWithBaseURL(
-                            null,
-                            "<html><body style='display:flex;justify-content:center;align-items:center;min-height:100%;background:#1e1e1e;'><img src='${content.downloadUrl}' style='max-width:100%;max-height:100%;object-fit:contain;'/></body></html>",
-                            "text/html",
-                            "UTF-8",
-                            null
-                        )
-                    }
-                },
+                factory = { webView },
                 modifier = Modifier.fillMaxSize()
             )
         }
     } else if (isMarkdown) {
         val isDarkTheme = isSystemInDarkTheme()
+        val webView = rememberWebView(context)
+        
+        DisposableEffect(webView, fileContent, isDarkTheme) {
+            webView.settings.javaScriptEnabled = true
+            webView.settings.cacheMode = android.webkit.WebSettings.LOAD_NO_CACHE
+            webView.clearCache(true)
+            webView.clearHistory()
+            val htmlContent = generateMarkdownHtml(fileContent, isDarkTheme)
+            webView.loadDataWithBaseURL(null, htmlContent, "text/html", "UTF-8", null)
+            
+            onDispose {
+                webView.loadDataWithBaseURL(null, "", "text/html", "UTF-8", null)
+                webView.clearHistory()
+                webView.clearCache(true)
+                webView.onPause()
+                webView.removeAllViews()
+                webView.destroy()
+            }
+        }
         
         AndroidView(
-            factory = { ctx ->
-                WebView(ctx).apply {
-                    webViewClient = WebViewClient()
-                    settings.javaScriptEnabled = true
-                    settings.cacheMode = android.webkit.WebSettings.LOAD_NO_CACHE
-                    clearCache(true)
-                    clearHistory()
-                    val htmlContent = generateMarkdownHtml(fileContent, isDarkTheme)
-                    loadDataWithBaseURL(null, htmlContent, "text/html", "UTF-8", null)
-                }
-            },
+            factory = { webView },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         )
     } else {
         val isDarkTheme = isSystemInDarkTheme()
+        val webView = rememberWebView(context)
+        
+        DisposableEffect(webView, fileContent, content.name, isDarkTheme) {
+            webView.settings.javaScriptEnabled = true
+            webView.settings.cacheMode = android.webkit.WebSettings.LOAD_NO_CACHE
+            webView.clearCache(true)
+            webView.clearHistory()
+            val htmlContent = generateCodeHtml(fileContent, content.name, isDarkTheme)
+            webView.loadDataWithBaseURL(null, htmlContent, "text/html", "UTF-8", null)
+            
+            onDispose {
+                webView.loadDataWithBaseURL(null, "", "text/html", "UTF-8", null)
+                webView.clearHistory()
+                webView.clearCache(true)
+                webView.onPause()
+                webView.removeAllViews()
+                webView.destroy()
+            }
+        }
         
         AndroidView(
-            factory = { ctx ->
-                WebView(ctx).apply {
-                    webViewClient = WebViewClient()
-                    settings.javaScriptEnabled = true
-                    settings.cacheMode = android.webkit.WebSettings.LOAD_NO_CACHE
-                    clearCache(true)
-                    clearHistory()
-                    val htmlContent = generateCodeHtml(fileContent, content.name, isDarkTheme)
-                    loadDataWithBaseURL(null, htmlContent, "text/html", "UTF-8", null)
-                }
-            },
+            factory = { webView },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         )
+    }
+}
+
+@Composable
+private fun rememberWebView(context: android.content.Context): WebView {
+    return remember {
+        WebView(context.applicationContext).apply {
+            webViewClient = WebViewClient()
+        }
     }
 }
 
