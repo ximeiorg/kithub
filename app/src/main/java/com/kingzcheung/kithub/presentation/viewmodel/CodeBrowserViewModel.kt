@@ -1,5 +1,6 @@
 package com.kingzcheung.kithub.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import com.kingzcheung.kithub.data.repository.RepositoryRepository
 import com.kingzcheung.kithub.domain.model.Content
 import com.kingzcheung.kithub.domain.model.ContentType
+import com.kingzcheung.kithub.util.ErrorNotifier
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,15 +23,19 @@ data class CodeBrowserState(
     val repo: String = "",
     val currentPath: String = "",
     val contents: List<Content> = emptyList(),
-    val loading: Boolean = false,
-    val error: String? = null
+    val loading: Boolean = false
 )
 
 @HiltViewModel
 class CodeBrowserViewModel @Inject constructor(
     private val repositoryRepository: RepositoryRepository,
+    private val errorNotifier: ErrorNotifier,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+    
+    companion object {
+        private const val TAG = "CodeBrowserViewModel"
+    }
     
     private val _state = MutableStateFlow(CodeBrowserState())
     val state: StateFlow<CodeBrowserState> = _state.asStateFlow()
@@ -47,7 +53,7 @@ class CodeBrowserViewModel @Inject constructor(
     }
     
     fun loadContents(path: String) {
-        _state.update { it.copy(loading = true, error = null, currentPath = path) }
+        _state.update { it.copy(loading = true, currentPath = path) }
         
         viewModelScope.launch {
             try {
@@ -56,7 +62,9 @@ class CodeBrowserViewModel @Inject constructor(
                 
                 _state.update { it.copy(contents = contents, loading = false) }
             } catch (e: Exception) {
-                _state.update { it.copy(error = e.message ?: "Failed to load contents", loading = false) }
+                Log.e(TAG, "Error loading contents: ${e.message}", e)
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Failed to load contents") { loadContents(path) }
             }
         }
     }

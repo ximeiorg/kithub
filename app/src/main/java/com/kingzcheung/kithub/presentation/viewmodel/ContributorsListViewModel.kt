@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kingzcheung.kithub.data.repository.ContributorRepository
 import com.kingzcheung.kithub.domain.model.Contributor
+import com.kingzcheung.kithub.util.ErrorNotifier
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +18,6 @@ import javax.inject.Inject
 data class ContributorsListState(
     val contributors: List<Contributor> = emptyList(),
     val loading: Boolean = true,
-    val error: String? = null,
     val page: Int = 1,
     val hasMore: Boolean = true,
     val includeAnonymous: Boolean = false
@@ -26,6 +26,7 @@ data class ContributorsListState(
 @HiltViewModel
 class ContributorsListViewModel @Inject constructor(
     private val contributorRepository: ContributorRepository,
+    private val errorNotifier: ErrorNotifier,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     
@@ -46,12 +47,13 @@ class ContributorsListViewModel @Inject constructor(
     
     fun loadContributors() {
         if (owner.isEmpty() || repo.isEmpty()) {
-            _state.update { it.copy(loading = false, error = "Missing parameters") }
+            _state.update { it.copy(loading = false) }
+            errorNotifier.showError("Missing parameters") { loadContributors() }
             return
         }
         
         viewModelScope.launch {
-            _state.update { it.copy(loading = true, error = null, page = 1) }
+            _state.update { it.copy(loading = true, page = 1) }
             try {
                 Log.d(TAG, "Loading contributors for $owner/$repo")
                 val result = contributorRepository.getContributors(
@@ -71,7 +73,8 @@ class ContributorsListViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading contributors: ${e.message}", e)
-                _state.update { it.copy(loading = false, error = e.message) }
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadContributors() }
             }
         }
     }
@@ -98,6 +101,7 @@ class ContributorsListViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading more contributors: ${e.message}", e)
                 _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadMore() }
             }
         }
     }

@@ -7,6 +7,7 @@ import com.kingzcheung.kithub.data.store.ThemeMode
 import com.kingzcheung.kithub.data.store.ThemeColor
 import com.kingzcheung.kithub.data.store.AppLanguage
 import com.kingzcheung.kithub.presentation.theme.ThemeColor as ThemeColorEnum
+import com.kingzcheung.kithub.util.ErrorNotifier
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,7 +27,8 @@ data class AppSettings(
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val settingsStore: SettingsStore
+    private val settingsStore: SettingsStore,
+    val errorNotifier: ErrorNotifier
 ) : ViewModel() {
     
     private val _settings = MutableStateFlow(AppSettings())

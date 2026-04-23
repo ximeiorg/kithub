@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kingzcheung.kithub.data.repository.UserRepository
 import com.kingzcheung.kithub.domain.model.Issue
+import com.kingzcheung.kithub.util.ErrorNotifier
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,14 +18,14 @@ data class IssuesListState(
     val issues: List<Issue> = emptyList(),
     val stateFilter: String = "all",
     val loading: Boolean = false,
-    val error: String? = null,
     val page: Int = 1,
     val hasMore: Boolean = true
 )
 
 @HiltViewModel
 class IssuesListViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val errorNotifier: ErrorNotifier
 ) : ViewModel() {
     
     companion object {
@@ -41,7 +42,7 @@ class IssuesListViewModel @Inject constructor(
     
     fun loadIssues() {
         viewModelScope.launch {
-            _state.update { it.copy(loading = true, error = null, page = 1) }
+            _state.update { it.copy(loading = true, page = 1) }
             try {
                 Log.d(TAG, "Loading issues with state=${_state.value.stateFilter}")
                 val allItems = userRepository.getCurrentUserIssues(page = 1)
@@ -57,7 +58,8 @@ class IssuesListViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading issues: ${e.message}", e)
-                _state.update { it.copy(loading = false, error = e.message) }
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadIssues() }
             }
         }
     }
@@ -81,6 +83,7 @@ class IssuesListViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading more issues: ${e.message}", e)
                 _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadMore() }
             }
         }
     }

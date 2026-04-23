@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kingzcheung.kithub.data.repository.RepositoryRepository
 import com.kingzcheung.kithub.domain.model.Content
+import com.kingzcheung.kithub.util.ErrorNotifier
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,13 +20,13 @@ import java.nio.charset.StandardCharsets
 data class FileViewerState(
     val content: Content? = null,
     val fileContent: String? = null,
-    val loading: Boolean = true,
-    val error: String? = null
+    val loading: Boolean = true
 )
 
 @HiltViewModel
 class FileViewerViewModel @Inject constructor(
     private val repositoryRepository: RepositoryRepository,
+    private val errorNotifier: ErrorNotifier,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     
@@ -47,7 +48,7 @@ class FileViewerViewModel @Inject constructor(
     
     fun loadFile() {
         viewModelScope.launch {
-            _state.update { it.copy(loading = true, error = null) }
+            _state.update { it.copy(loading = true) }
             try {
                 Log.d(TAG, "Loading file $owner/$repo/$path")
                 val file = repositoryRepository.getFileContent(owner, repo, path, branch)
@@ -62,7 +63,8 @@ class FileViewerViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading file: ${e.message}", e)
-                _state.update { it.copy(loading = false, error = e.message) }
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadFile() }
             }
         }
     }

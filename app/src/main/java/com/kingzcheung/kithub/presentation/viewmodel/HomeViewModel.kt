@@ -11,6 +11,7 @@ import com.kingzcheung.kithub.domain.model.PullRequestBranch
 import com.kingzcheung.kithub.domain.model.Repository
 import com.kingzcheung.kithub.domain.model.User
 import com.kingzcheung.kithub.domain.model.UserBrief
+import com.kingzcheung.kithub.util.ErrorNotifier
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,15 +28,13 @@ data class HomeState(
     val issues: List<Issue> = emptyList(),
     val pullRequests: List<PullRequest> = emptyList(),
     val orgs: List<UserBrief> = emptyList(),
-    val issuesError: String? = null,
-    val prsError: String? = null,
-    val loading: Boolean = false,
-    val error: String? = null
+    val loading: Boolean = false
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val errorNotifier: ErrorNotifier
 ) : ViewModel() {
     
     companion object {
@@ -51,7 +50,7 @@ class HomeViewModel @Inject constructor(
     
     fun loadHomeData() {
         viewModelScope.launch {
-            _state.update { it.copy(loading = true, error = null) }
+            _state.update { it.copy(loading = true) }
             try {
                 Log.d(TAG, "Loading current user...")
                 val user = userRepository.getCurrentUser()
@@ -85,20 +84,20 @@ class HomeViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading home data: ${e.message}", e)
-                _state.update { it.copy(loading = false, error = "${e.message}\n${e.cause?.message ?: ""}") }
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadHomeData() }
             }
         }
     }
     
     fun loadIssues() {
         viewModelScope.launch {
-            _state.update { it.copy(loading = true, issuesError = null) }
+            _state.update { it.copy(loading = true) }
             try {
                 Log.d(TAG, "Loading user issues with filter=all, state=all...")
                 val allItems = userRepository.getCurrentUserIssues(1)
                 Log.d(TAG, "Total items from /issues: ${allItems.size}")
                 
-                // Filter out pull requests - only show real issues
                 val issues = allItems.filter { it.pullRequest == null }
                 Log.d(TAG, "Filtered issues (excluding PRs): ${issues.size}")
                 
@@ -110,33 +109,27 @@ class HomeViewModel @Inject constructor(
                     Log.w(TAG, "All items are pull requests, no actual issues found")
                 }
                 
-                _state.update { it.copy(issues = issues, loading = false, issuesError = null) }
+                _state.update { it.copy(issues = issues, loading = false) }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading issues: ${e.message}", e)
                 Log.e(TAG, "Error cause: ${e.cause?.message}", e.cause)
-                _state.update { 
-                    it.copy(
-                        loading = false, 
-                        issuesError = "${e.message}\nCause: ${e.cause?.message ?: "none"}"
-                    ) 
-                }
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadIssues() }
             }
         }
     }
     
     fun loadPullRequests() {
         viewModelScope.launch {
-            _state.update { it.copy(loading = true, prsError = null) }
+            _state.update { it.copy(loading = true) }
             try {
                 Log.d(TAG, "Loading user pull requests from /issues endpoint...")
                 val allItems = userRepository.getCurrentUserIssues(1)
                 Log.d(TAG, "Total items from /issues: ${allItems.size}")
                 
-                // Filter pull requests - items with pullRequest field
                 val prIssues = allItems.filter { it.pullRequest != null }
                 Log.d(TAG, "Filtered PRs: ${prIssues.size}")
                 
-                // Convert Issue to PullRequest
                 val prs = prIssues.map { issue ->
                     PullRequest(
                         id = issue.id,
@@ -164,16 +157,12 @@ class HomeViewModel @Inject constructor(
                     Log.d(TAG, "PR #${pr.number}: ${pr.title}, state=${pr.state}, user=${pr.user.login}")
                 }
                 
-                _state.update { it.copy(pullRequests = prs, loading = false, prsError = null) }
+                _state.update { it.copy(pullRequests = prs, loading = false) }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading pull requests: ${e.message}", e)
                 Log.e(TAG, "Error cause: ${e.cause?.message}", e.cause)
-                _state.update { 
-                    it.copy(
-                        loading = false, 
-                        prsError = "${e.message}\nCause: ${e.cause?.message ?: "none"}"
-                    ) 
-                }
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadPullRequests() }
             }
         }
     }
@@ -190,6 +179,7 @@ class HomeViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading orgs: ${e.message}", e)
                 _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadOrgs() }
             }
         }
     }

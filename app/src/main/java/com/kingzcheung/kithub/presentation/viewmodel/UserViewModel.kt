@@ -1,5 +1,6 @@
 package com.kingzcheung.kithub.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,6 +8,7 @@ import com.kingzcheung.kithub.data.repository.UserRepository
 import com.kingzcheung.kithub.domain.model.Repository
 import com.kingzcheung.kithub.domain.model.User
 import com.kingzcheung.kithub.domain.model.UserBrief
+import com.kingzcheung.kithub.util.ErrorNotifier
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,15 +24,19 @@ data class UserState(
     val followers: List<UserBrief> = emptyList(),
     val following: List<UserBrief> = emptyList(),
     val loading: Boolean = true,
-    val error: String? = null,
     val reposPage: Int = 1
 )
 
 @HiltViewModel
 class UserViewModel @Inject constructor(
     private val userRepository: UserRepository,
+    private val errorNotifier: ErrorNotifier,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+    
+    companion object {
+        private const val TAG = "UserViewModel"
+    }
     
     private val username: String = savedStateHandle.get<String>("username") ?: ""
     
@@ -43,7 +49,7 @@ class UserViewModel @Inject constructor(
     
     fun loadUser() {
         viewModelScope.launch {
-            _state.update { it.copy(loading = true, error = null) }
+            _state.update { it.copy(loading = true) }
             try {
                 val user = userRepository.getUser(username)
                 val repos = userRepository.getUserRepos(username, 1)
@@ -56,7 +62,9 @@ class UserViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(loading = false, error = e.message) }
+                Log.e(TAG, "Error loading user: ${e.message}", e)
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadUser() }
             }
         }
     }
@@ -76,7 +84,9 @@ class UserViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(loading = false, error = e.message) }
+                Log.e(TAG, "Error loading more repos: ${e.message}", e)
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadMoreRepos() }
             }
         }
     }
@@ -88,7 +98,9 @@ class UserViewModel @Inject constructor(
                 val starred = userRepository.getStarredRepos(username, 1)
                 _state.update { it.copy(starred = starred, loading = false) }
             } catch (e: Exception) {
-                _state.update { it.copy(loading = false, error = e.message) }
+                Log.e(TAG, "Error loading starred: ${e.message}", e)
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadStarred() }
             }
         }
     }
@@ -100,7 +112,9 @@ class UserViewModel @Inject constructor(
                 val followers = userRepository.getFollowers(username, 1)
                 _state.update { it.copy(followers = followers, loading = false) }
             } catch (e: Exception) {
-                _state.update { it.copy(loading = false, error = e.message) }
+                Log.e(TAG, "Error loading followers: ${e.message}", e)
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadFollowers() }
             }
         }
     }
@@ -112,7 +126,9 @@ class UserViewModel @Inject constructor(
                 val following = userRepository.getFollowing(username, 1)
                 _state.update { it.copy(following = following, loading = false) }
             } catch (e: Exception) {
-                _state.update { it.copy(loading = false, error = e.message) }
+                Log.e(TAG, "Error loading following: ${e.message}", e)
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadFollowing() }
             }
         }
     }

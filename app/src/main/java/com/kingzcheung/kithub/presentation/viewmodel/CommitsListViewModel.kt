@@ -1,10 +1,12 @@
 package com.kingzcheung.kithub.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kingzcheung.kithub.data.repository.CommitRepository
 import com.kingzcheung.kithub.domain.model.CommitBrief
+import com.kingzcheung.kithub.util.ErrorNotifier
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +18,6 @@ import javax.inject.Inject
 data class CommitsListState(
     val commits: List<CommitBrief> = emptyList(),
     val loading: Boolean = true,
-    val error: String? = null,
     val page: Int = 1,
     val hasMore: Boolean = true
 )
@@ -24,8 +25,13 @@ data class CommitsListState(
 @HiltViewModel
 class CommitsListViewModel @Inject constructor(
     private val commitRepository: CommitRepository,
+    private val errorNotifier: ErrorNotifier,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+    
+    companion object {
+        private const val TAG = "CommitsListViewModel"
+    }
     
     private val owner: String = savedStateHandle.get<String>("owner") ?: ""
     private val repo: String = savedStateHandle.get<String>("repo") ?: ""
@@ -39,7 +45,7 @@ class CommitsListViewModel @Inject constructor(
     
     fun loadCommits() {
         viewModelScope.launch {
-            _state.update { it.copy(loading = true, error = null) }
+            _state.update { it.copy(loading = true) }
             try {
                 val commits = commitRepository.getCommits(owner, repo, null, 1)
                 _state.update {
@@ -51,7 +57,9 @@ class CommitsListViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(loading = false, error = e.message) }
+                Log.e(TAG, "Error loading commits: ${e.message}", e)
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadCommits() }
             }
         }
     }
@@ -73,7 +81,9 @@ class CommitsListViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(loading = false, error = e.message) }
+                Log.e(TAG, "Error loading more commits: ${e.message}", e)
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadMore() }
             }
         }
     }

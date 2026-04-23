@@ -88,35 +88,6 @@ fun RepositoryScreen(
             ) {
                 CircularProgressIndicator()
             }
-        } else if (state.error != null && state.repository == null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .background(MaterialTheme.colorScheme.background),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        Icons.Default.Error,
-                        contentDescription = "Error",
-                        modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Text(
-                        text = state.error!!,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(32.dp))
-                    FilledTonalButton(onClick = { viewModel.loadRepository() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Retry")
-                    }
-                }
-            }
         } else if (state.repository != null) {
             val repo = state.repository!!
             

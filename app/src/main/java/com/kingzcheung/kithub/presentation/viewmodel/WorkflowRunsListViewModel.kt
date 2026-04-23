@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kingzcheung.kithub.data.repository.WorkflowRepository
 import com.kingzcheung.kithub.domain.model.WorkflowRun
+import com.kingzcheung.kithub.util.ErrorNotifier
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +20,6 @@ data class WorkflowRunsListState(
     val totalCount: Int = 0,
     val workflowName: String = "",
     val loading: Boolean = true,
-    val error: String? = null,
     val page: Int = 1,
     val hasMore: Boolean = true,
     val statusFilter: String? = null
@@ -28,6 +28,7 @@ data class WorkflowRunsListState(
 @HiltViewModel
 class WorkflowRunsListViewModel @Inject constructor(
     private val workflowRepository: WorkflowRepository,
+    private val errorNotifier: ErrorNotifier,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     
@@ -49,12 +50,13 @@ class WorkflowRunsListViewModel @Inject constructor(
     
     fun loadWorkflowRuns() {
         if (owner.isEmpty() || repo.isEmpty() || workflowId.isEmpty()) {
-            _state.update { it.copy(loading = false, error = "Missing parameters") }
+            _state.update { it.copy(loading = false) }
+            errorNotifier.showError("Missing parameters") { loadWorkflowRuns() }
             return
         }
         
         viewModelScope.launch {
-            _state.update { it.copy(loading = true, error = null, page = 1) }
+            _state.update { it.copy(loading = true, page = 1) }
             try {
                 Log.d(TAG, "Loading workflow runs for $owner/$repo workflow $workflowId")
                 val result = workflowRepository.getWorkflowRuns(
@@ -78,7 +80,8 @@ class WorkflowRunsListViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading workflow runs: ${e.message}", e)
-                _state.update { it.copy(loading = false, error = e.message) }
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadWorkflowRuns() }
             }
         }
     }
@@ -105,6 +108,7 @@ class WorkflowRunsListViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading more workflow runs: ${e.message}", e)
                 _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadMore() }
             }
         }
     }

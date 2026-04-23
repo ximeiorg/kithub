@@ -1,5 +1,6 @@
 package com.kingzcheung.kithub.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,6 +9,7 @@ import com.kingzcheung.kithub.data.repository.IssueRepository
 import com.kingzcheung.kithub.data.repository.PullRequestRepository
 import com.kingzcheung.kithub.data.repository.RepositoryRepository
 import com.kingzcheung.kithub.domain.model.*
+import com.kingzcheung.kithub.util.ErrorNotifier
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,7 +29,6 @@ data class RepositoryState(
     val selectedBranch: String = "main",
     val languages: Map<String, Int> = emptyMap(),
     val loading: Boolean = true,
-    val error: String? = null,
     val isStarred: Boolean = false,
     val currentPath: String = ""
 )
@@ -38,8 +39,13 @@ class RepositoryViewModel @Inject constructor(
     private val issueRepository: IssueRepository,
     private val pullRequestRepository: PullRequestRepository,
     private val commitRepository: CommitRepository,
+    private val errorNotifier: ErrorNotifier,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+    
+    companion object {
+        private const val TAG = "RepositoryViewModel"
+    }
     
     private val owner: String = savedStateHandle.get<String>("owner") ?: ""
     private val repo: String = savedStateHandle.get<String>("repo") ?: ""
@@ -53,7 +59,7 @@ class RepositoryViewModel @Inject constructor(
     
     fun loadRepository() {
         viewModelScope.launch {
-            _state.update { it.copy(loading = true, error = null) }
+            _state.update { it.copy(loading = true) }
             try {
                 val repository = repositoryRepository.getRepository(owner, repo)
                 val branches = repositoryRepository.getBranches(owner, repo)
@@ -75,7 +81,9 @@ class RepositoryViewModel @Inject constructor(
                 
                 loadReadme()
             } catch (e: Exception) {
-                _state.update { it.copy(loading = false, error = e.message) }
+                Log.e(TAG, "Error loading repository: ${e.message}", e)
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadRepository() }
             }
         }
     }
@@ -87,7 +95,7 @@ class RepositoryViewModel @Inject constructor(
                 val decodedContent = readme.content?.let { decodeBase64(it) }
                 _state.update { it.copy(readme = decodedContent) }
             } catch (e: Exception) {
-                // README may not exist
+                Log.d(TAG, "README not found: ${e.message}")
             }
         }
     }
@@ -108,7 +116,9 @@ class RepositoryViewModel @Inject constructor(
                 val issues = issueRepository.getIssues(owner, repo, state, 1)
                 _state.update { it.copy(issues = issues, loading = false) }
             } catch (e: Exception) {
-                _state.update { it.copy(loading = false, error = e.message) }
+                Log.e(TAG, "Error loading issues: ${e.message}", e)
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadIssues(state) }
             }
         }
     }
@@ -120,7 +130,9 @@ class RepositoryViewModel @Inject constructor(
                 val prs = pullRequestRepository.getPullRequests(owner, repo, state, 1)
                 _state.update { it.copy(pullRequests = prs, loading = false) }
             } catch (e: Exception) {
-                _state.update { it.copy(loading = false, error = e.message) }
+                Log.e(TAG, "Error loading pull requests: ${e.message}", e)
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadPullRequests(state) }
             }
         }
     }
@@ -132,7 +144,9 @@ class RepositoryViewModel @Inject constructor(
                 val commits = commitRepository.getCommits(owner, repo, _state.value.selectedBranch, 1)
                 _state.update { it.copy(commits = commits, loading = false) }
             } catch (e: Exception) {
-                _state.update { it.copy(loading = false, error = e.message) }
+                Log.e(TAG, "Error loading commits: ${e.message}", e)
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { loadCommits() }
             }
         }
     }
@@ -144,7 +158,9 @@ class RepositoryViewModel @Inject constructor(
                 val contents = repositoryRepository.getContents(owner, repo, path, _state.value.selectedBranch)
                 _state.update { it.copy(contents = contents, loading = false) }
             } catch (e: Exception) {
-                _state.update { it.copy(loading = false, error = e.message) }
+                Log.e(TAG, "Error navigating to path: ${e.message}", e)
+                _state.update { it.copy(loading = false) }
+                errorNotifier.showError(e.message ?: "Unknown error") { navigateToPath(path) }
             }
         }
     }
@@ -181,7 +197,8 @@ class RepositoryViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(error = e.message) }
+                Log.e(TAG, "Error toggling star: ${e.message}", e)
+                errorNotifier.showError(e.message ?: "Unknown error") { toggleStar() }
             }
         }
     }

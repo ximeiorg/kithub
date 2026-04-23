@@ -73,33 +73,6 @@ fun CodeBrowserScreen(
             ) {
                 CircularProgressIndicator()
             }
-        } else if (state.error != null && state.contents.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        Icons.Default.Error,
-                        contentDescription = "Error",
-                        modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = state.error ?: "Unknown error",
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    FilledTonalButton(onClick = { viewModel.loadContents(state.currentPath) }) {
-                        Icon(Icons.Default.Refresh, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Retry")
-                    }
-                }
-            }
         } else {
             LazyColumn(
                 modifier = Modifier
