@@ -200,6 +200,7 @@ fun KithubApp() {
                             onNavigateToCode = { navController.navigate("code/$owner/$repo") },
                             onNavigateToActions = { navController.navigate("actions/$owner/$repo") },
                             onNavigateToContributors = { navController.navigate("contributors/$owner/$repo") },
+                            onNavigateToReleases = { navController.navigate("releases/$owner/$repo") },
                             onNavigateToUser = { username ->
                                 navController.navigate("user/$username")
                             }
@@ -281,6 +282,18 @@ fun KithubApp() {
                             onNavigateToUser = { username ->
                                 navController.navigate("user/$username")
                             }
+                        )
+                    }
+                    
+                    composable(
+                        "releases/{owner}/{repo}",
+                        arguments = listOf(
+                            navArgument("owner") { type = NavType.StringType },
+                            navArgument("repo") { type = NavType.StringType }
+                        )
+                    ) {
+                        ReleasesListScreen(
+                            onNavigateBack = { navController.navigateUp() }
                         )
                     }
                     

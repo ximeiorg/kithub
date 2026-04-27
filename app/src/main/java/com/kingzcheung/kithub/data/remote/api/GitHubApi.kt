@@ -269,6 +269,14 @@ interface GitHubApi {
         @Path("owner") owner: String,
         @Path("repo") repo: String
     ): Map<String, Int>
+    
+    @GET("repos/{owner}/{repo}/releases")
+    suspend fun getReleases(
+        @Path("owner") owner: String,
+        @Path("repo") repo: String,
+        @Query("per_page") perPage: Int = 30,
+        @Query("page") page: Int = 1
+    ): List<ReleaseDto>
 }
 
 interface GitHubAuthApi {

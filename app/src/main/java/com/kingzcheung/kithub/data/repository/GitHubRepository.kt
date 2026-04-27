@@ -198,3 +198,15 @@ class ContributorRepository @Inject constructor(
     ): List<Contributor> =
         api.getContributors(owner, repo, if (anon) "1" else null, page = page).map { it.toDomain() }
 }
+
+@Singleton
+class ReleaseRepository @Inject constructor(
+    private val api: GitHubApi
+) {
+    suspend fun getReleases(
+        owner: String,
+        repo: String,
+        page: Int = 1
+    ): List<Release> =
+        api.getReleases(owner, repo, page = page).map { it.toDomain() }
+}

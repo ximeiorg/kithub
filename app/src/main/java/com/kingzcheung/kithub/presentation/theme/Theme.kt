@@ -57,7 +57,11 @@ private val GreenLightColorScheme = lightColorScheme(
     inverseOnSurface = Color(0xFFF1F0F4),
     inversePrimary = Color(0xFF9FD6A6),
     surfaceTint = Color(0xFF2EA043),
-    surfaceContainerHighest = Color(0xFFFFFFFF)
+    surfaceContainerLowest = Color(0xFFFFFFFF),
+    surfaceContainerLow = Color(0xFFF9F9F9),
+    surfaceContainer = Color(0xFFF3F3F3),
+    surfaceContainerHigh = Color(0xFFEDEDED),
+    surfaceContainerHighest = Color(0xFFE7E7E7)
 )
 
 private val GreenDarkColorScheme = darkColorScheme(
@@ -89,7 +93,11 @@ private val GreenDarkColorScheme = darkColorScheme(
     inverseOnSurface = Color(0xFF1A1C1E),
     inversePrimary = Color(0xFF2EA043),
     surfaceTint = Color(0xFF9FD6A6),
-    surfaceContainerHighest = Color(0xFF121212)
+    surfaceContainerLowest = Color(0xFF0F0F0F),
+    surfaceContainerLow = Color(0xFF1A1A1A),
+    surfaceContainer = Color(0xFF1E1E1E),
+    surfaceContainerHigh = Color(0xFF232323),
+    surfaceContainerHighest = Color(0xFF282828)
 )
 
 @Composable
@@ -165,7 +173,11 @@ private fun generateColorSchemeFromSeed(seedColor: Color, darkTheme: Boolean): a
             inverseOnSurface = Color(0xFF1A1C1E),
             inversePrimary = seedColor,
             surfaceTint = seedColor.copy(alpha = 0.8f),
-            surfaceContainerHighest = Color(0xFF121212)
+            surfaceContainerLowest = Color(0xFF0F0F0F),
+            surfaceContainerLow = Color(0xFF1A1A1A),
+            surfaceContainer = Color(0xFF1E1E1E),
+            surfaceContainerHigh = Color(0xFF232323),
+            surfaceContainerHighest = Color(0xFF282828)
         )
     } else {
         lightColorScheme(
@@ -196,7 +208,12 @@ private fun generateColorSchemeFromSeed(seedColor: Color, darkTheme: Boolean): a
             inverseSurface = Color(0xFF2F3033),
             inverseOnSurface = Color(0xFFF1F0F4),
             inversePrimary = seedColor.copy(alpha = 0.8f),
-            surfaceTint = seedColor
+            surfaceTint = seedColor,
+            surfaceContainerLowest = Color(0xFFFFFFFF),
+            surfaceContainerLow = Color(0xFFF9F9F9),
+            surfaceContainer = Color(0xFFF3F3F3),
+            surfaceContainerHigh = Color(0xFFEDEDED),
+            surfaceContainerHighest = Color(0xFFE7E7E7)
         )
     }
 }

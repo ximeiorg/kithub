@@ -42,6 +42,7 @@ fun RepositoryScreen(
     onNavigateToCode: () -> Unit = {},
     onNavigateToActions: () -> Unit = {},
     onNavigateToContributors: () -> Unit = {},
+    onNavigateToReleases: () -> Unit = {},
     onNavigateToUser: (String) -> Unit = {},
     viewModel: RepositoryViewModel = hiltViewModel()
 ) {
@@ -76,7 +77,7 @@ fun RepositoryScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
                 )
             )
         }
@@ -104,7 +105,7 @@ fun RepositoryScreen(
 item {
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
-                        color = MaterialTheme.colorScheme.surface
+                        color = MaterialTheme.colorScheme.surfaceContainerLow
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp)
@@ -267,13 +268,21 @@ item {
                 }
                 
                 item {
+                    RepositoryMenuItem(
+                        icon = Icons.Outlined.NewReleases,
+                        title = "Releases",
+                        onClick = onNavigateToReleases
+                    )
+                }
+                
+                item {
                     Spacer(modifier = Modifier.height(8.dp))
                 }
                 
                 item {
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
-                        color = MaterialTheme.colorScheme.surface,
+                        color = MaterialTheme.colorScheme.surfaceContainerLow,
                         onClick = { showBranchSelector = true }
                     ) {
                         Row(
@@ -369,7 +378,7 @@ fun RepositoryMenuItem(
     Surface(
         modifier = modifier.fillMaxWidth(),
         onClick = onClick,
-        color = MaterialTheme.colorScheme.surface
+        color = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
         Row(
             modifier = Modifier
