@@ -31,6 +31,7 @@ import com.kingzcheung.kithub.presentation.viewmodel.ProfileViewModel
 @Composable
 fun ProfileScreen(
     onNavigateToUser: (String) -> Unit,
+    onNavigateToRepository: (String, String) -> Unit,
     onNavigateToRepos: () -> Unit,
     onNavigateToOrgs: () -> Unit,
     onNavigateToStarred: () -> Unit,
@@ -94,7 +95,9 @@ fun ProfileScreen(
                                 Spacer(modifier = Modifier.height(8.dp))
                                 PinnedReposRow(
                                     repos = state.pinnedRepos,
-                                    onRepoClick = { }
+                                    onRepoClick = { repo ->
+                                        onNavigateToRepository(repo.owner.login, repo.name)
+                                    }
                                 )
                             }
                         }

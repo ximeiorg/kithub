@@ -113,6 +113,7 @@ fun MainScreen(
             composable(BottomNavItem.Profile.route) {
                 ProfileScreen(
                     onNavigateToUser = onNavigateToUser,
+                    onNavigateToRepository = onNavigateToRepository,
                     onNavigateToRepos = { navController.navigate("user_repos") },
                     onNavigateToOrgs = { navController.navigate("user_orgs") },
                     onNavigateToStarred = { navController.navigate("user_starred") },
