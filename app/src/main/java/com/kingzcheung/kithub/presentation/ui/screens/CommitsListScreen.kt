@@ -28,7 +28,7 @@ fun CommitsListScreen(
                 title = { Text("Commits") },
                 navigationIcon = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back")
                     }
                 },
                 actions = {

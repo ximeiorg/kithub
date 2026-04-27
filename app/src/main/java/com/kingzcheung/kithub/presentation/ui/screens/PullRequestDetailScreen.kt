@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,7 +26,6 @@ import com.kingzcheung.kithub.presentation.viewmodel.PullRequestDetailViewModel
 @Composable
 fun PullRequestDetailScreen(
     onNavigateToUser: (String) -> Unit = {},
-    onNavigateToCommit: (String) -> Unit = {},
     viewModel: PullRequestDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -43,7 +43,7 @@ fun PullRequestDetailScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back")
                     }
                 },
                 actions = {
@@ -166,7 +166,7 @@ fun PullRequestDetailContent(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
                     )
                 ) {
                     Text(
@@ -305,7 +305,7 @@ fun PullRequestBranchInfo(pullRequest: PullRequest) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.5f)
         )
     ) {
         Row(
@@ -317,7 +317,7 @@ fun PullRequestBranchInfo(pullRequest: PullRequest) {
         ) {
             BranchInfo(branch = pullRequest.head, label = "From")
             Icon(
-                Icons.Default.ArrowForward,
+                Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = "to",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -356,6 +356,7 @@ fun BranchInfo(branch: PullRequestBranch, label: String) {
     }
 }
 
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun PullRequestMetaInfo(
     pullRequest: PullRequest,

@@ -102,7 +102,7 @@ class HomeViewModel @Inject constructor(
                 Log.d(TAG, "Filtered issues (excluding PRs): ${issues.size}")
                 
                 issues.forEach { issue ->
-                    Log.d(TAG, "Issue #${issue.number}: ${issue.title}, state=${issue.state}, user=${issue.user?.login}, repo=${issue.repositoryUrl}")
+                    Log.d(TAG, "Issue #${issue.number}: ${issue.title}, state=${issue.state}, user=${issue.user.login}, repo=${issue.repositoryUrl}")
                 }
                 
                 if (issues.isEmpty() && allItems.isNotEmpty()) {

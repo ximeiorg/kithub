@@ -6,9 +6,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.twotone.Explore
+import androidx.compose.material.icons.twotone.Home
+import androidx.compose.material.icons.twotone.Notifications
+import androidx.compose.material.icons.twotone.Person
+import androidx.compose.material.icons.twotone.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,11 +33,11 @@ sealed class BottomNavItem(
     val title: String,
     val icon: ImageVector
 ) {
-    object Home : BottomNavItem("home", "Home", Icons.Default.Home)
-    object Notifications : BottomNavItem("notifications", "Notifications", Icons.Default.Notifications)
-    object Explore : BottomNavItem("explore", "Explore", Icons.Default.Explore)
-    object Profile : BottomNavItem("profile", "Profile", Icons.Default.Person)
-    object Settings : BottomNavItem("settings", "Settings", Icons.Default.Settings)
+    object Home : BottomNavItem("home", "Home", Icons.TwoTone.Home)
+    object Notifications : BottomNavItem("notifications", "Notifications", Icons.TwoTone.Notifications)
+    object Explore : BottomNavItem("explore", "Explore", Icons.TwoTone.Explore)
+    object Profile : BottomNavItem("profile", "Profile", Icons.TwoTone.Person)
+    object Settings : BottomNavItem("settings", "Settings", Icons.TwoTone.Settings)
 }
 
 @Composable
@@ -43,7 +46,6 @@ fun MainScreen(
     onNavigateToRepository: (String, String) -> Unit,
     onNavigateToUser: (String) -> Unit,
     onNavigateToIssue: (String, String, Int) -> Unit,
-    onNavigateToPullRequests: () -> Unit,
     onLogout: () -> Unit
 ) {
     val navItems = listOf(
@@ -140,6 +142,16 @@ fun MainScreen(
             }
             composable(BottomNavItem.Settings.route) {
                 SettingsScreen(onLogout = onLogout)
+            }
+            composable("issues") {
+                IssuesListScreen(
+                    onNavigateToIssue = onNavigateToIssue
+                )
+            }
+            composable("prs") {
+                PullRequestsListScreen(
+                    onNavigateToPullRequest = onNavigateToIssue
+                )
             }
         }
     }

@@ -1,11 +1,13 @@
 package com.kingzcheung.kithub.presentation.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.CallSplit
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -241,7 +243,7 @@ fun QuickAccessSection(
             QuickAccessCard(
                 modifier = Modifier.weight(1f),
                 title = "Pull Requests",
-                icon = Icons.Outlined.CallSplit,
+                icon = Icons.AutoMirrored.Outlined.CallSplit,
                 color = MaterialTheme.colorScheme.primary,
                 onClick = onNavigateToPullRequests
             )
@@ -327,7 +329,10 @@ fun EventCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        onClick = onRepoClick
+        onClick = onRepoClick,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+        )
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -341,14 +346,16 @@ fun EventCard(
                         contentDescription = actor.login,
                         modifier = Modifier
                             .size(24.dp)
-                            .clip(CircleShape),
+                            .clip(CircleShape)
+                            .clickable(onClick = onUserClick),
                         contentScale = ContentScale.Crop
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = actor.login,
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable(onClick = onUserClick)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                 }
@@ -388,7 +395,10 @@ fun OrganizationCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        onClick = onClick
+        onClick = onClick,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+        )
     ) {
         Row(
             modifier = Modifier

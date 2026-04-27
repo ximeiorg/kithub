@@ -2,6 +2,7 @@ package com.kingzcheung.kithub.presentation.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.CallSplit
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
@@ -20,7 +21,10 @@ fun RepositoryCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        onClick = onClick
+        onClick = onClick,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+        )
     ) {
         Column(
             modifier = Modifier
@@ -67,7 +71,7 @@ fun RepositoryCard(
                 )
                 
                 IconText(
-                    icon = Icons.Default.CallSplit,
+                    icon = Icons.AutoMirrored.Filled.CallSplit,
                     text = repo.forksCount.toString()
                 )
                 

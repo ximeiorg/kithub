@@ -2,7 +2,6 @@ package com.kingzcheung.kithub.presentation.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -45,7 +44,7 @@ fun IssueDetailScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back")
                     }
                 },
                 actions = {
@@ -124,7 +123,7 @@ fun IssueDetailContent(
         }
         
         item {
-            IssueMetaInfo(issue = issue, onNavigateToUser = onNavigateToUser)
+            IssueMetaInfo(issue = issue)
         }
         
         item {
@@ -155,7 +154,7 @@ fun IssueDetailContent(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
                     )
                 ) {
                     Text(
@@ -256,8 +255,7 @@ fun IssueStateBadge(state: IssueState) {
 
 @Composable
 fun IssueMetaInfo(
-    issue: Issue,
-    onNavigateToUser: (String) -> Unit
+    issue: Issue
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically

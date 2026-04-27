@@ -21,7 +21,6 @@ fun ReadmeWebView(
     modifier: Modifier = Modifier
 ) {
     val isDark = isSystemInDarkTheme()
-    val webViewHeight = remember { mutableStateOf(500.dp) }
     
     AndroidView(
         factory = { context ->

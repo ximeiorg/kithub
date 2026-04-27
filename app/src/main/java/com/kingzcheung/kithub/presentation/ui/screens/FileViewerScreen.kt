@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -41,7 +43,7 @@ fun FileViewerScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back")
                     }
                 },
                 actions = {
@@ -84,7 +86,7 @@ fun FileViewerScreen(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
-                            Icons.Default.InsertDriveFile,
+                            Icons.AutoMirrored.Filled.InsertDriveFile,
                             contentDescription = "Binary file",
                             modifier = Modifier.size(64.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -127,11 +129,10 @@ fun FileViewerContent(
     fileContent: String,
     paddingValues: PaddingValues
 ) {
-    val fileName = content.name.lowercase()
+val fileName = content.name.lowercase()
     val isMarkdown = fileName.endsWith(".md") || fileName.endsWith(".markdown")
     val isImage = fileName.endsWith(".png") || fileName.endsWith(".jpg") || 
-                 fileName.endsWith(".jpeg") || fileName.endsWith(".gif") || fileName.endsWith(".webp")
-    val isCode = !isMarkdown && !isImage
+                 fileName.endsWith(".jpeg") || fileName.endsWith(".gif") || fileName.endsWith("webp")
     val context = LocalContext.current
     
     if (isImage && content.downloadUrl != null) {

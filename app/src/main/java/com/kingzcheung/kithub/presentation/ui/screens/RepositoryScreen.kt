@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.CallSplit
+import androidx.compose.material.icons.automirrored.outlined.CallSplit
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.rounded.*
@@ -29,6 +31,7 @@ import com.kingzcheung.kithub.presentation.viewmodel.RepositoryViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
+@Suppress("UNUSED_PARAMETER")
 fun RepositoryScreen(
     owner: String,
     repoName: String,
@@ -52,7 +55,7 @@ fun RepositoryScreen(
                 title = { },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back")
                     }
                 },
                 actions = {
@@ -146,7 +149,7 @@ item {
                                     textStyle = MaterialTheme.typography.labelSmall
                                 )
                                 IconText(
-                                    icon = Icons.Default.CallSplit,
+                                    icon = Icons.AutoMirrored.Filled.CallSplit,
                                     text = "${repo.forksCount}",
                                     textStyle = MaterialTheme.typography.labelSmall
                                 )
@@ -241,7 +244,7 @@ item {
                 
                 item {
                     RepositoryMenuItem(
-                        icon = Icons.Outlined.CallSplit,
+                        icon = Icons.AutoMirrored.Outlined.CallSplit,
                         title = "Pull Requests",
                         onClick = onNavigateToPullRequests
                     )

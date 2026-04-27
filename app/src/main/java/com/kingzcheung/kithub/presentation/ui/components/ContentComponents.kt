@@ -3,6 +3,7 @@ package com.kingzcheung.kithub.presentation.ui.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.InsertDriveFile
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -25,7 +26,10 @@ fun CommitCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        onClick = onClick
+        onClick = onClick,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+        )
     ) {
         Column(
             modifier = Modifier
@@ -133,7 +137,7 @@ fun getFileTypeIcon(fileName: String): androidx.compose.ui.graphics.vector.Image
         name.endsWith(".gradle") || name.endsWith(".gradle.kts") -> Icons.Outlined.Build
         name.endsWith(".properties") || name.endsWith(".yaml") || name.endsWith(".yml") -> Icons.Outlined.Settings
         name.endsWith(".gitignore") -> Icons.Outlined.Source
-        else -> Icons.Outlined.InsertDriveFile
+        else -> Icons.AutoMirrored.Outlined.InsertDriveFile
     }
 }
 

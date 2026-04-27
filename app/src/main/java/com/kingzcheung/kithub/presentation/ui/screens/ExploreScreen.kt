@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowRightAlt
+import androidx.compose.material.icons.automirrored.filled.CallSplit
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
@@ -126,7 +128,7 @@ fun ExploreScreen(
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     state = listState,
-                    contentPadding = PaddingValues(vertical = 8.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(state.events, key = { it.id }) { event ->
@@ -142,8 +144,7 @@ fun ExploreScreen(
                                         onNavigateToRepository(parts[0], parts[1])
                                     }
                                 }
-                            },
-                            modifier = Modifier.padding(horizontal = 16.dp)
+                            }
                         )
                     }
                     
@@ -186,7 +187,7 @@ fun ExploreEventItem(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
         )
     ) {
         Column(
@@ -328,7 +329,7 @@ fun EventRepoCard(
                         text = repoDetail.stargazersCount.toString()
                     )
                     IconText(
-                        icon = Icons.Default.CallSplit,
+                        icon = Icons.AutoMirrored.Filled.CallSplit,
                         text = repoDetail.forksCount.toString()
                     )
                 }
@@ -457,7 +458,7 @@ fun EventPayloadDetails(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Icon(
-                                imageVector = Icons.Default.ArrowRightAlt,
+                                imageVector = Icons.AutoMirrored.Filled.ArrowRightAlt,
                                 contentDescription = null,
                                 modifier = Modifier.size(12.dp),
                                 tint = MaterialTheme.colorScheme.primary
@@ -659,13 +660,13 @@ fun getEventDescription(event: Event): String {
         EventType.PullRequestEvent -> {
             val pr = event.payload?.get("pull_request") as? Map<String, Any?>
             val number = pr?.get("number") as? Int
-            val action = event.payload?.get("action") as? String
+            val prAction = event.payload?.get("action") as? String
             val merged = pr?.get("merged") as? Boolean
             when {
                 merged == true -> "Merged PR #$number"
-                action == "closed" -> "Closed PR #$number"
-                action == "opened" -> "Opened PR #$number"
-                action == "reopened" -> "Reopened PR #$number"
+                prAction == "closed" -> "Closed PR #$number"
+                prAction == "opened" -> "Opened PR #$number"
+                prAction == "reopened" -> "Reopened PR #$number"
                 else -> "Updated PR #$number"
             }
         }

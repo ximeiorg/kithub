@@ -81,7 +81,7 @@ private val GreenDarkColorScheme = darkColorScheme(
     onBackground = Color(0xFFE3E2E6),
     surface = Color(0xFF1E1E1E),
     onSurface = Color(0xFFE3E2E6),
-    surfaceVariant = Color(0xFF2A2A2A),
+    surfaceVariant = Color(0xFF1F1F1F),
     onSurfaceVariant = Color(0xFFC2C6CF),
     outline = Color(0xFF8C9199),
     outlineVariant = Color(0xFF42474E),
@@ -89,7 +89,7 @@ private val GreenDarkColorScheme = darkColorScheme(
     inverseOnSurface = Color(0xFF1A1C1E),
     inversePrimary = Color(0xFF2EA043),
     surfaceTint = Color(0xFF9FD6A6),
-    surfaceContainerHighest = Color(0xFF2A2A2A)
+    surfaceContainerHighest = Color(0xFF121212)
 )
 
 @Composable
@@ -157,14 +157,15 @@ private fun generateColorSchemeFromSeed(seedColor: Color, darkTheme: Boolean): a
             onBackground = Color(0xFFE3E2E6),
             surface = Color(0xFF1E1E1E),
             onSurface = Color(0xFFE3E2E6),
-            surfaceVariant = Color(0xFF2A2A2A),
+            surfaceVariant = Color(0xFF1F1F1F),
             onSurfaceVariant = Color(0xFFC2C6CF),
             outline = Color(0xFF8C9199),
             outlineVariant = Color(0xFF42474E),
             inverseSurface = Color(0xFFE3E2E6),
             inverseOnSurface = Color(0xFF1A1C1E),
             inversePrimary = seedColor,
-            surfaceTint = seedColor.copy(alpha = 0.8f)
+            surfaceTint = seedColor.copy(alpha = 0.8f),
+            surfaceContainerHighest = Color(0xFF121212)
         )
     } else {
         lightColorScheme(

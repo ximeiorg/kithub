@@ -88,9 +88,6 @@ fun createMaterial3Markwon(
     val dp2 = (2 * density).toInt()
     val dp4 = (4 * density).toInt()
     val dp6 = (6 * density).toInt()
-    val dp8 = (8 * density).toInt()
-    val dp12 = (12 * density).toInt()
-    val dp16 = (16 * density).toInt()
     val dp24 = (24 * density).toInt()
     
     return Markwon.builder(context)
@@ -121,7 +118,7 @@ fun createMaterial3Markwon(
             }
             
             override fun configureSpansFactory(builder: MarkwonSpansFactory.Builder) {
-                builder.appendFactory(Heading::class.java) { configuration, props ->
+                builder.appendFactory(Heading::class.java) { _, props ->
                     val level = props.get(CoreProps.HEADING_LEVEL) ?: 1
                     val textSize = when (level) {
                         1 -> 28f

@@ -25,6 +25,7 @@ import com.kingzcheung.kithub.presentation.viewmodel.CommitDetailViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Suppress("UNUSED_PARAMETER")
 fun CommitDetailScreen(
     onNavigateToFile: (String) -> Unit = {},
     viewModel: CommitDetailViewModel = hiltViewModel()
@@ -42,7 +43,7 @@ fun CommitDetailScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back")
                     }
                 },
                 actions = {
@@ -125,22 +126,22 @@ fun CommitDetailContent(
         if (commit.stats != null) {
             item {
                 Spacer(modifier = Modifier.height(16.dp))
-                CommitStatsCard(stats = commit.stats!!)
+                CommitStatsCard(stats = commit.stats)
             }
         }
         
-        if (commit.files != null && commit.files.isNotEmpty()) {
+        if (!commit.files.isNullOrEmpty()) {
             item {
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    text = "Changed files (${commit.files!!.size})",
+                    text = "Changed files (${commit.files.size})",
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
             
-            items(commit.files!!) { file ->
+            items(commit.files) { file ->
                 CommitFileItem(file = file)
                 Spacer(modifier = Modifier.height(8.dp))
             }
@@ -153,7 +154,7 @@ fun CommitHeader(commit: Commit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -309,7 +310,7 @@ fun CommitFileItem(file: CommitFile) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.5f)
         )
     ) {
         Row(

@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.CallSplit
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
@@ -25,7 +27,6 @@ fun UserReposListScreen(
 ) {
     val state by viewModel.state.collectAsState()
     var showSortMenu by remember { mutableStateOf(false) }
-    var showFilterMenu by remember { mutableStateOf(false) }
     
     Scaffold(
         topBar = {
@@ -33,12 +34,12 @@ fun UserReposListScreen(
                 title = { Text("Repositories") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back")
                     }
                 },
                 actions = {
                     IconButton(onClick = { showSortMenu = true }) {
-                        Icon(Icons.Default.Sort, contentDescription = "Sort")
+                        Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = "Sort")
                     }
                     DropdownMenu(
                         expanded = showSortMenu,
@@ -197,7 +198,10 @@ fun UserRepoItem(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        onClick = onClick
+        onClick = onClick,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+        )
     ) {
         Column(
             modifier = Modifier
@@ -267,7 +271,7 @@ fun UserRepoItem(
                 )
                 
                 IconText(
-                    icon = Icons.Default.CallSplit,
+                    icon = Icons.AutoMirrored.Filled.CallSplit,
                     text = repo.forksCount.toString()
                 )
             }

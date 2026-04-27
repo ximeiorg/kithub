@@ -17,6 +17,7 @@ import com.kingzcheung.kithub.presentation.viewmodel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Suppress("UNUSED_PARAMETER")
 fun UserScreen(
     username: String,
     onNavigateToRepository: (String, String) -> Unit,

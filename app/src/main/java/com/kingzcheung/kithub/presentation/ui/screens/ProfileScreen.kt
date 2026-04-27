@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
@@ -29,6 +30,7 @@ import com.kingzcheung.kithub.presentation.viewmodel.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Suppress("UNUSED_PARAMETER")
 fun ProfileScreen(
     onNavigateToUser: (String) -> Unit,
     onNavigateToRepository: (String, String) -> Unit,
@@ -329,7 +331,7 @@ fun ProfileMenuCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
         )
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -411,7 +413,7 @@ fun EventItem(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
         )
     ) {
         Row(
@@ -462,10 +464,10 @@ fun getEventIcon(type: EventType): ImageVector {
         EventType.ForkEvent -> Icons.Default.ForkRight
         EventType.WatchEvent -> Icons.Rounded.Star
         EventType.IssuesEvent -> Icons.Default.Report
-        EventType.IssueCommentEvent -> Icons.Default.Comment
+        EventType.IssueCommentEvent -> Icons.AutoMirrored.Filled.Comment
         EventType.PullRequestEvent -> Icons.Default.Merge
         EventType.PullRequestReviewEvent -> Icons.Default.Check
-        EventType.PullRequestReviewCommentEvent -> Icons.Default.Comment
+        EventType.PullRequestReviewCommentEvent -> Icons.AutoMirrored.Filled.Comment
         EventType.ReleaseEvent -> Icons.Default.NewReleases
         EventType.PublicEvent -> Icons.Default.Public
         else -> Icons.Default.Code
