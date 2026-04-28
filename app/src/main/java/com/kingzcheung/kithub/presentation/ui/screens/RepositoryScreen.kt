@@ -19,11 +19,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.domain.model.Branch
 import com.kingzcheung.kithub.presentation.ui.components.*
 import com.kingzcheung.kithub.presentation.ui.components.MarkwonText
@@ -48,6 +50,8 @@ fun RepositoryScreen(
 ) {
     val state by viewModel.state.collectAsState()
     var showBranchSelector by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val strings = LocalStrings.current
     
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -56,23 +60,23 @@ fun RepositoryScreen(
                 title = { },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = strings.getBack(context))
                     }
                 },
                 actions = {
                     if (state.repository != null) {
                         IconButton(onClick = { /* TODO: Add new issue */ }) {
-                            Icon(Icons.Default.Add, contentDescription = "Add Issue")
+                            Icon(Icons.Default.Add, contentDescription = strings.getAddIssue(context))
                         }
                         IconButton(onClick = { viewModel.toggleStar() }) {
                             Icon(
                                 imageVector = if (state.isStarred) Icons.Rounded.Star else Icons.Rounded.StarBorder,
-                                contentDescription = "Star",
+                                contentDescription = strings.getStar(context),
                                 tint = if (state.isStarred) Color(0xFFFFA726) else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         IconButton(onClick = { /* TODO: Share */ }) {
-                            Icon(Icons.Default.Share, contentDescription = "Share")
+                            Icon(Icons.Default.Share, contentDescription = strings.getShare(context))
                         }
                     }
                 },
@@ -237,7 +241,7 @@ item {
                 item {
                     RepositoryMenuItem(
                         icon = Icons.Outlined.ErrorOutline,
-                        title = "Issues",
+                        title = strings.getIssues(context),
                         count = repo.openIssuesCount,
                         onClick = onNavigateToIssues
                     )
@@ -246,7 +250,7 @@ item {
                 item {
                     RepositoryMenuItem(
                         icon = Icons.AutoMirrored.Outlined.CallSplit,
-                        title = "Pull Requests",
+                        title = strings.getPulls(context),
                         onClick = onNavigateToPullRequests
                     )
                 }
@@ -254,7 +258,7 @@ item {
                 item {
                     RepositoryMenuItem(
                         icon = Icons.Outlined.PlayArrow,
-                        title = "Actions",
+                        title = strings.getActions(context),
                         onClick = onNavigateToActions
                     )
                 }
@@ -262,7 +266,7 @@ item {
                 item {
                     RepositoryMenuItem(
                         icon = Icons.Outlined.People,
-                        title = "Contributors",
+                        title = strings.getContributors(context),
                         onClick = onNavigateToContributors
                     )
                 }
@@ -270,7 +274,7 @@ item {
                 item {
                     RepositoryMenuItem(
                         icon = Icons.Outlined.NewReleases,
-                        title = "Releases",
+                        title = strings.getReleases(context),
                         onClick = onNavigateToReleases
                     )
                 }
@@ -291,7 +295,7 @@ item {
                         ) {
                             Icon(
                                 Icons.Outlined.Source,
-                                contentDescription = "Branch",
+                                contentDescription = strings.getBranch(context),
                                 modifier = Modifier.size(20.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
@@ -304,7 +308,7 @@ item {
                             Spacer(modifier = Modifier.weight(1f))
                             Icon(
                                 Icons.Default.UnfoldMore,
-                                contentDescription = "Change branch",
+                                contentDescription = strings.getChangeBranch(context),
                                 modifier = Modifier.size(24.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
@@ -315,7 +319,7 @@ item {
                 item {
                     RepositoryMenuItem(
                         icon = Icons.Outlined.Folder,
-                        title = "Code",
+                        title = strings.getCode(context),
                         onClick = onNavigateToCode
                     )
                 }
@@ -323,7 +327,7 @@ item {
                 item {
                     RepositoryMenuItem(
                         icon = Icons.Outlined.History,
-                        title = "Commits",
+                        title = strings.getCommits(context),
                         onClick = onNavigateToCommits
                     )
                 }
@@ -332,7 +336,7 @@ item {
                     item {
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "README",
+                            text = strings.getReadme(context),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(horizontal = 16.dp)
@@ -362,7 +366,9 @@ item {
                 viewModel.selectBranch(branch)
                 showBranchSelector = false
             },
-            onDismiss = { showBranchSelector = false }
+            onDismiss = { showBranchSelector = false },
+            context = context,
+            strings = strings
         )
     }
 }
@@ -469,13 +475,15 @@ fun BranchSelectorDialog(
     branches: List<Branch>,
     selectedBranch: String,
     onBranchSelected: (String) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    context: android.content.Context,
+    strings: com.kingzcheung.kithub.util.Strings
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { 
             Text(
-                text = "Select Branch",
+                text = strings.getSelectBranch(context),
                 style = MaterialTheme.typography.titleMedium
             )
         },
@@ -492,7 +500,7 @@ fun BranchSelectorDialog(
                         if (branch.name == selectedBranch) {
                             Icon(
                                 Icons.Default.Check,
-                                contentDescription = "Selected",
+                                contentDescription = strings.getSelected(context),
                                 modifier = Modifier.size(20.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
@@ -516,7 +524,7 @@ fun BranchSelectorDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close")
+                Text(strings.getClose(context))
             }
         }
     )

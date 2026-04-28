@@ -12,8 +12,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.domain.model.Repository
 import com.kingzcheung.kithub.presentation.ui.components.*
 import com.kingzcheung.kithub.presentation.viewmodel.UserReposListViewModel
@@ -26,27 +28,29 @@ fun UserReposListScreen(
     viewModel: UserReposListViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    val strings = LocalStrings.current
     var showSortMenu by remember { mutableStateOf(false) }
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Repositories") },
+                title = { Text(strings.getRepositories(context)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = strings.getBack(context))
                     }
                 },
                 actions = {
                     IconButton(onClick = { showSortMenu = true }) {
-                        Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = "Sort")
+                        Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = strings.getSort(context))
                     }
                     DropdownMenu(
                         expanded = showSortMenu,
                         onDismissRequest = { showSortMenu = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Recently updated") },
+                            text = { Text(strings.getRecentlyUpdated(context)) },
                             onClick = {
                                 viewModel.setSortBy("updated")
                                 showSortMenu = false
@@ -58,7 +62,7 @@ fun UserReposListScreen(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Created") },
+                            text = { Text(context.getString(com.kingzcheung.kithub.R.string.created)) },
                             onClick = {
                                 viewModel.setSortBy("created")
                                 showSortMenu = false
@@ -70,7 +74,7 @@ fun UserReposListScreen(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Full name") },
+                            text = { Text(strings.getFullName(context)) },
                             onClick = {
                                 viewModel.setSortBy("full_name")
                                 showSortMenu = false
@@ -82,7 +86,7 @@ fun UserReposListScreen(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Pushed") },
+                            text = { Text(strings.getPushed(context)) },
                             onClick = {
                                 viewModel.setSortBy("pushed")
                                 showSortMenu = false
@@ -95,7 +99,7 @@ fun UserReposListScreen(
                         )
                     }
                     IconButton(onClick = { viewModel.refresh() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                        Icon(Icons.Default.Refresh, contentDescription = strings.getRefresh(context))
                     }
                 }
             )
@@ -112,7 +116,7 @@ fun UserReposListScreen(
             }
         } else if (state.error != null) {
             ErrorState(
-                message = state.error ?: "Unknown error",
+                message = state.error ?: strings.getUnknown(context),
                 onRetry = { viewModel.refresh() },
                 modifier = Modifier.padding(paddingValues)
             )
@@ -126,13 +130,13 @@ fun UserReposListScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         Icons.Default.Book,
-                        contentDescription = "No repositories",
+                        contentDescription = strings.getNoResults(context),
                         modifier = Modifier.size(48.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "No repositories found",
+                        text = strings.getNoRepositoriesFound(context),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -149,7 +153,7 @@ fun UserReposListScreen(
                 if (state.totalCount > 0) {
                     item {
                         Text(
-                            text = "${state.totalCount} repository(ies)",
+                            text = strings.getRepositoryFormat(context, state.totalCount),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 8.dp)
@@ -163,7 +167,9 @@ fun UserReposListScreen(
                 ) { repo ->
                     UserRepoItem(
                         repo = repo,
-                        onClick = { onNavigateToRepository(repo.owner.login, repo.name) }
+                        onClick = { onNavigateToRepository(repo.owner.login, repo.name) },
+                        strings = strings,
+                        context = context
                     )
                 }
                 
@@ -179,7 +185,7 @@ fun UserReposListScreen(
                                 CircularProgressIndicator()
                             } else {
                                 Button(onClick = { viewModel.loadMore() }) {
-                                    Text("Load More")
+                                    Text(strings.getLoadMore(context))
                                 }
                             }
                         }
@@ -194,7 +200,9 @@ fun UserReposListScreen(
 fun UserRepoItem(
     repo: Repository,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -225,7 +233,7 @@ fun UserRepoItem(
                         color = MaterialTheme.colorScheme.surfaceVariant
                     ) {
                         Text(
-                            text = "Private",
+                            text = strings.getPrivateRepo(context),
                             style = MaterialTheme.typography.labelSmall,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -237,7 +245,7 @@ fun UserRepoItem(
                         color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
                     ) {
                         Text(
-                            text = "Fork",
+                            text = strings.getForkRepo(context),
                             style = MaterialTheme.typography.labelSmall,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             color = MaterialTheme.colorScheme.onSecondaryContainer

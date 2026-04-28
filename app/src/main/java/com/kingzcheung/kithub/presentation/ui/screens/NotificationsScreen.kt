@@ -15,9 +15,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.domain.model.NotificationReason
 import com.kingzcheung.kithub.domain.model.NotificationThread
 import com.kingzcheung.kithub.presentation.ui.components.*
@@ -29,21 +31,23 @@ fun NotificationsScreen(
     viewModel: NotificationsViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    val strings = LocalStrings.current
     var showMarkAllDialog by remember { mutableStateOf(false) }
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Notifications") },
+                title = { Text(strings.getNotifications(context)) },
                 actions = {
                     IconButton(onClick = { viewModel.toggleShowAll() }) {
                         Icon(
                             imageVector = if (state.showAll) Icons.Default.FilterList else Icons.Default.FilterAlt,
-                            contentDescription = if (state.showAll) "Show unread only" else "Show all"
+                            contentDescription = if (state.showAll) strings.getShowUnreadOnly(context) else strings.getShowAll(context)
                         )
                     }
                     IconButton(onClick = { showMarkAllDialog = true }) {
-                        Icon(Icons.Default.CheckCircle, contentDescription = "Mark all read")
+                        Icon(Icons.Default.CheckCircle, contentDescription = strings.getMarkAllRead(context))
                     }
                 }
             )
@@ -60,18 +64,18 @@ fun NotificationsScreen(
             }
         } else if (state.error != null && state.notifications.isEmpty()) {
             ErrorState(
-                message = state.error ?: "Unknown error",
+                message = state.error ?: strings.getUnknown(context),
                 onRetry = { viewModel.loadNotifications() },
                 modifier = Modifier.padding(paddingValues)
             )
         } else if (state.notifications.isEmpty()) {
             EmptyState(
-                message = if (state.showAll) "No notifications found" else "No unread notifications",
+                message = if (state.showAll) strings.getNoResults(context) else strings.getNoUnreadNotifications(context),
                 modifier = Modifier.padding(paddingValues),
                 action = {
                     if (!state.showAll) {
                         TextButton(onClick = { viewModel.toggleShowAll() }) {
-                            Text("Show all notifications")
+                            Text(strings.getShowAllNotifications(context))
                         }
                     }
                 }
@@ -88,7 +92,9 @@ fun NotificationsScreen(
                     NotificationCard(
                         notification = notification,
                         onMarkAsRead = { viewModel.markAsRead(notification.id) },
-                        onMarkAsDone = { viewModel.markAsDone(notification.id) }
+                        onMarkAsDone = { viewModel.markAsDone(notification.id) },
+                        strings = strings,
+                        context = context
                     )
                 }
                 
@@ -104,7 +110,7 @@ fun NotificationsScreen(
                                 CircularProgressIndicator()
                             } else {
                                 TextButton(onClick = { viewModel.loadMoreNotifications() }) {
-                                    Text("Load more")
+                                    Text(strings.getLoadMore(context))
                                 }
                             }
                         }
@@ -117,19 +123,19 @@ fun NotificationsScreen(
     if (showMarkAllDialog) {
         AlertDialog(
             onDismissRequest = { showMarkAllDialog = false },
-            title = { Text("Mark all as read") },
-            text = { Text("Are you sure you want to mark all notifications as read?") },
+            title = { Text(strings.getMarkAllReadTitle(context)) },
+            text = { Text(strings.getMarkAllReadMessage(context)) },
             confirmButton = {
                 Button(onClick = {
                     showMarkAllDialog = false
                     viewModel.markAllAsRead()
                 }) {
-                    Text("Mark all read")
+                    Text(strings.getMarkAllRead(context))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showMarkAllDialog = false }) {
-                    Text("Cancel")
+                    Text(strings.getCancel(context))
                 }
             }
         )
@@ -141,7 +147,9 @@ fun NotificationCard(
     notification: NotificationThread,
     onMarkAsRead: () -> Unit,
     onMarkAsDone: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -212,7 +220,7 @@ fun NotificationCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
-                        contentDescription = "Mark as read",
+                        contentDescription = strings.getMarkAsRead(context),
                         modifier = Modifier.size(18.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -224,7 +232,7 @@ fun NotificationCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Done,
-                        contentDescription = "Mark as done",
+                        contentDescription = strings.getMarkAsDone(context),
                         modifier = Modifier.size(18.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )

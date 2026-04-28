@@ -21,23 +21,25 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.kingzcheung.kithub.LocalStrings
 
 sealed class BottomNavItem(
     val route: String,
-    val title: String,
+    val titleKey: String,
     val icon: ImageVector
 ) {
-    object Home : BottomNavItem("home", "Home", Icons.TwoTone.Home)
-    object Notifications : BottomNavItem("notifications", "Notifications", Icons.TwoTone.Notifications)
-    object Explore : BottomNavItem("explore", "Explore", Icons.TwoTone.Explore)
-    object Profile : BottomNavItem("profile", "Profile", Icons.TwoTone.Person)
-    object Settings : BottomNavItem("settings", "Settings", Icons.TwoTone.Settings)
+    object Home : BottomNavItem("home", "home", Icons.TwoTone.Home)
+    object Notifications : BottomNavItem("notifications", "notifications", Icons.TwoTone.Notifications)
+    object Explore : BottomNavItem("explore", "explore", Icons.TwoTone.Explore)
+    object Profile : BottomNavItem("profile", "profile", Icons.TwoTone.Person)
+    object Settings : BottomNavItem("settings", "settings", Icons.TwoTone.Settings)
 }
 
 @Composable
@@ -163,6 +165,9 @@ fun BottomNavigationBar(
     currentRoute: String?,
     onItemClick: (BottomNavItem) -> Unit
 ) {
+    val context = LocalContext.current
+    val strings = LocalStrings.current
+    
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surfaceContainerHighest
@@ -186,7 +191,9 @@ fun BottomNavigationBar(
                     BottomNavItemView(
                         item = item,
                         isSelected = isSelected,
-                        onClick = { onItemClick(item) }
+                        onClick = { onItemClick(item) },
+                        context = context,
+                        strings = strings
                     )
                 }
             }
@@ -198,8 +205,19 @@ fun BottomNavigationBar(
 fun BottomNavItemView(
     item: BottomNavItem,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    context: android.content.Context,
+    strings: com.kingzcheung.kithub.util.Strings
 ) {
+    val title = when (item.titleKey) {
+        "home" -> strings.getHome(context)
+        "notifications" -> strings.getNotifications(context)
+        "explore" -> "Explore"
+        "profile" -> strings.getProfile(context)
+        "settings" -> strings.getSettings(context)
+        else -> item.titleKey
+    }
+    
     val transition = updateTransition(
         targetState = isSelected,
         label = "navItemTransition"
@@ -262,7 +280,7 @@ fun BottomNavItemView(
         ) {
             Icon(
                 imageVector = item.icon,
-                contentDescription = item.title,
+                contentDescription = title,
                 tint = iconColor,
                 modifier = Modifier.size(24.dp)
             )
@@ -289,7 +307,7 @@ fun BottomNavItemView(
                 Row {
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = item.title,
+                        text = title,
                         style = MaterialTheme.typography.labelMedium,
                         color = iconColor,
                         maxLines = 1

@@ -10,9 +10,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.domain.model.Workflow
 import com.kingzcheung.kithub.domain.model.WorkflowState
 import com.kingzcheung.kithub.presentation.viewmodel.WorkflowsListViewModel
@@ -24,14 +26,16 @@ fun WorkflowsListScreen(
     viewModel: WorkflowsListViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    val strings = LocalStrings.current
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Actions") },
+                title = { Text(strings.getActions(context)) },
                 actions = {
                     IconButton(onClick = { viewModel.refresh() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                        Icon(Icons.Default.Refresh, contentDescription = strings.getRefresh(context))
                     }
                 }
             )
@@ -56,19 +60,19 @@ fun WorkflowsListScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         Icons.Outlined.PlayArrow,
-                        contentDescription = "No workflows",
+                        contentDescription = strings.getNoResults(context),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(48.dp)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "No workflows found",
+                        text = context.getString(com.kingzcheung.kithub.R.string.no_workflows),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Add workflow files to .github/workflows/",
+                        text = strings.getAddWorkflowFiles(context),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
@@ -85,7 +89,7 @@ fun WorkflowsListScreen(
                 if (state.totalCount > 0) {
                     item {
                         Text(
-                            text = "${state.totalCount} workflow(s)",
+                            text = strings.getWorkflowFormat(context, state.totalCount),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 8.dp)
@@ -115,7 +119,7 @@ fun WorkflowsListScreen(
                                 CircularProgressIndicator()
                             } else {
                                 Button(onClick = { viewModel.loadMore() }) {
-                                    Text("Load More")
+                                    Text(strings.getLoadMore(context))
                                 }
                             }
                         }

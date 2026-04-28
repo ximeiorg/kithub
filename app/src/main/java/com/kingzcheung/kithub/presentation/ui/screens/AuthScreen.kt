@@ -35,6 +35,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.presentation.viewmodel.AuthViewModel
 
 @Composable
@@ -45,6 +46,7 @@ fun AuthScreen(
     val state by viewModel.state.collectAsState()
     val deviceCode by viewModel.deviceCode.collectAsState()
     val context = LocalContext.current
+    val strings = LocalStrings.current
     
     LaunchedEffect(state.isAuthenticated) {
         if (state.isAuthenticated) {
@@ -70,20 +72,20 @@ fun AuthScreen(
                     id = if (isDark) com.kingzcheung.kithub.R.drawable.icon_dark
                           else com.kingzcheung.kithub.R.drawable.icon_light
                 ),
-                contentDescription = "Kithub Logo",
+                contentDescription = strings.getAppName(context),
                 modifier = Modifier.size(80.dp)
             )
             
             Spacer(modifier = Modifier.height(16.dp))
             
             Text(
-                text = "Kithub",
+                text = strings.getAppName(context),
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold
             )
             
             Text(
-                text = "GitHub Client for Android",
+                text = strings.getGithubClient(context),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -106,14 +108,14 @@ fun AuthScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "Authenticate with GitHub",
+                                text = strings.getAuthenticateGithub(context),
                                 style = MaterialTheme.typography.titleMedium
                             )
                             
                             Spacer(modifier = Modifier.height(16.dp))
                             
                             Text(
-                                text = "1. Open this URL:",
+                                text = strings.getOpenUrl(context),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             
@@ -135,7 +137,7 @@ fun AuthScreen(
                             Spacer(modifier = Modifier.height(16.dp))
                             
                             Text(
-                                text = "2. Enter this code:",
+                                text = strings.getEnterCode(context),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             
@@ -160,7 +162,7 @@ fun AuthScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                             
                             Text(
-                                text = "Waiting for authorization...",
+                                text = strings.getWaitingAuth(context),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -168,7 +170,7 @@ fun AuthScreen(
                             Spacer(modifier = Modifier.height(16.dp))
                             
                             TextButton(onClick = { viewModel.cancelAuth() }) {
-                                Text("Cancel")
+                                Text(strings.getCancel(context))
                             }
                         }
                     }
@@ -184,13 +186,13 @@ fun AuthScreen(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Sign in with GitHub")
+                        Text(strings.getSignInGithub(context))
                     }
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
                     TextButton(onClick = { onAuthSuccess() }) {
-                        Text("Continue without signing in")
+                        Text(strings.getContinueWithoutSignIn(context))
                     }
                 }
             }

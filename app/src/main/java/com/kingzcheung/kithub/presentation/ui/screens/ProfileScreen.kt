@@ -18,9 +18,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.domain.model.Event
 import com.kingzcheung.kithub.domain.model.EventType
 import com.kingzcheung.kithub.domain.model.Repository
@@ -41,18 +43,20 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    val strings = LocalStrings.current
     
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("Profile") },
+                title = { Text(strings.getProfile(context)) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerLow
                 ),
                 actions = {
                     IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                        Icon(Icons.Default.Settings, contentDescription = strings.getSettings(context))
                     }
                 }
             )
@@ -69,7 +73,7 @@ fun ProfileScreen(
             }
         } else if (state.error != null && state.user == null) {
             ErrorState(
-                message = state.error ?: "Unknown error",
+                message = state.error ?: strings.getUnknown(context),
                 onRetry = { viewModel.loadProfile() },
                 modifier = Modifier.padding(paddingValues)
             )
@@ -83,14 +87,14 @@ fun ProfileScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item {
-                        ProfileUserInfo(user = user)
+                        ProfileUserInfo(user = user, strings = strings, context = context)
                     }
                     
                     if (state.pinnedRepos.isNotEmpty()) {
                         item {
                             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                                 Text(
-                                    text = "Pinned Repositories",
+                                    text = strings.getPinnedRepositories(context),
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -112,7 +116,9 @@ fun ProfileScreen(
                             onReposClick = onNavigateToRepos,
                             onOrgsClick = onNavigateToOrgs,
                             onStarredClick = onNavigateToStarred,
-                            modifier = Modifier.padding(horizontal = 16.dp)
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            strings = strings,
+                            context = context
                         )
                     }
                     
@@ -120,7 +126,7 @@ fun ProfileScreen(
                         item {
                             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                                 Text(
-                                    text = "Contribution Activity",
+                                    text = strings.getContributionActivity(context),
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -131,7 +137,9 @@ fun ProfileScreen(
                         items(state.events, key = { it.id }) { event ->
                             EventItem(
                                 event = event,
-                                modifier = Modifier.padding(horizontal = 16.dp)
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                strings = strings,
+                                context = context
                             )
                         }
                     }
@@ -227,6 +235,8 @@ fun PinnedRepoCard(
 @Composable
 fun ProfileUserInfo(
     user: com.kingzcheung.kithub.domain.model.User,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -286,9 +296,9 @@ fun ProfileUserInfo(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                StatItem(label = "Followers", count = user.followers)
-                StatItem(label = "Following", count = user.following)
-                StatItem(label = "Repos", count = user.publicRepos)
+                StatItem(label = strings.getFollowers(context), count = user.followers)
+                StatItem(label = strings.getFollowing(context), count = user.following)
+                StatItem(label = strings.getReposTab(context), count = user.publicRepos)
             }
             Spacer(modifier = Modifier.height(8.dp))
         }
@@ -325,7 +335,9 @@ fun ProfileMenuCard(
     onReposClick: () -> Unit,
     onOrgsClick: () -> Unit,
     onStarredClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -337,21 +349,21 @@ fun ProfileMenuCard(
         Column(modifier = Modifier.fillMaxWidth()) {
             ProfileMenuRow(
                 icon = Icons.Default.Book,
-                title = "Repositories",
+                title = strings.getRepositories(context),
                 count = reposCount,
                 onClick = onReposClick
             )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
             ProfileMenuRow(
                 icon = Icons.Default.Group,
-                title = "Organizations",
+                title = strings.getOrganizations(context),
                 count = orgsCount,
                 onClick = onOrgsClick
             )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
             ProfileMenuRow(
                 icon = Icons.Rounded.Star,
-                title = "Starred",
+                title = strings.getStarred(context),
                 count = null,
                 onClick = onStarredClick
             )
@@ -407,7 +419,9 @@ fun ProfileMenuRow(
 @Composable
 fun EventItem(
     event: Event,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -439,7 +453,7 @@ fun EventItem(
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = getEventTitle(event),
+                    text = getEventTitle(event, strings, context),
                     style = MaterialTheme.typography.bodyMedium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -474,21 +488,21 @@ fun getEventIcon(type: EventType): ImageVector {
     }
 }
 
-fun getEventTitle(event: Event): String {
-    val repoName = event.repo?.name ?: "unknown"
+fun getEventTitle(event: Event, strings: com.kingzcheung.kithub.util.Strings, context: android.content.Context): String {
+    val repoName = event.repo?.name ?: strings.getUnknown(context)
     return when (event.type) {
-        EventType.PushEvent -> "Pushed to $repoName"
-        EventType.CreateEvent -> "Created ${event.payload?.get("ref_type") ?: "repository"} in $repoName"
-        EventType.DeleteEvent -> "Deleted ${event.payload?.get("ref_type") ?: "branch"} in $repoName"
-        EventType.ForkEvent -> "Forked $repoName"
-        EventType.WatchEvent -> "Starred $repoName"
-        EventType.IssuesEvent -> "${event.payload?.get("action") ?: "Updated"} issue in $repoName"
-        EventType.IssueCommentEvent -> "Commented on issue in $repoName"
+        EventType.PushEvent -> strings.getPushedTo(context) + " $repoName"
+        EventType.CreateEvent -> strings.getCreated(context) + " ${event.payload?.get("ref_type") ?: "repository"} in $repoName"
+        EventType.DeleteEvent -> strings.getDeleted(context) + " ${event.payload?.get("ref_type") ?: "branch"} in $repoName"
+        EventType.ForkEvent -> strings.getForked(context) + " $repoName"
+        EventType.WatchEvent -> strings.getStarredRepo(context) + " $repoName"
+        EventType.IssuesEvent -> "${event.payload?.get("action") ?: "Updated"} ${strings.getIssues(context).lowercase()} in $repoName"
+        EventType.IssueCommentEvent -> strings.getCommentedOn(context) + " ${strings.getIssues(context).lowercase()} in $repoName"
         EventType.PullRequestEvent -> "${event.payload?.get("action") ?: "Updated"} PR in $repoName"
-        EventType.PullRequestReviewEvent -> "Reviewed PR in $repoName"
-        EventType.PullRequestReviewCommentEvent -> "Commented on PR review in $repoName"
-        EventType.ReleaseEvent -> "Published release in $repoName"
-        EventType.PublicEvent -> "Made $repoName public"
-        else -> "Activity in $repoName"
+        EventType.PullRequestReviewEvent -> strings.getReviewedPrIn(context) + " $repoName"
+        EventType.PullRequestReviewCommentEvent -> strings.getCommentedOnPrIn(context) + " $repoName"
+        EventType.ReleaseEvent -> strings.getPublishedRelease(context, repoName)
+        EventType.PublicEvent -> strings.getMadePublic(context, repoName)
+        else -> strings.getActivityIn(context, repoName)
     }
 }

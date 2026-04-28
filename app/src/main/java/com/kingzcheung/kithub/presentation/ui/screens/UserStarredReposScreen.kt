@@ -11,8 +11,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.domain.model.Repository
 import com.kingzcheung.kithub.presentation.ui.components.*
 import com.kingzcheung.kithub.presentation.viewmodel.UserStarredReposViewModel
@@ -25,27 +27,29 @@ fun UserStarredReposScreen(
     viewModel: UserStarredReposViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    val strings = LocalStrings.current
     var showSortMenu by remember { mutableStateOf(false) }
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Starred") },
+                title = { Text(strings.getStarredTab(context)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = strings.getBack(context))
                     }
                 },
                 actions = {
                     IconButton(onClick = { showSortMenu = true }) {
-                        Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = "Sort")
+                        Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = strings.getSort(context))
                     }
                     DropdownMenu(
                         expanded = showSortMenu,
                         onDismissRequest = { showSortMenu = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Recently starred") },
+                            text = { Text(strings.getRecentlyStarred(context)) },
                             onClick = {
                                 viewModel.setSortBy("created")
                                 showSortMenu = false
@@ -57,7 +61,7 @@ fun UserStarredReposScreen(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Recently updated") },
+                            text = { Text(strings.getRecentlyUpdated(context)) },
                             onClick = {
                                 viewModel.setSortBy("updated")
                                 showSortMenu = false
@@ -70,7 +74,7 @@ fun UserStarredReposScreen(
                         )
                     }
                     IconButton(onClick = { viewModel.refresh() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                        Icon(Icons.Default.Refresh, contentDescription = strings.getRefresh(context))
                     }
                 }
             )
@@ -87,7 +91,7 @@ fun UserStarredReposScreen(
             }
         } else if (state.error != null) {
             ErrorState(
-                message = state.error ?: "Unknown error",
+                message = state.error ?: strings.getUnknown(context),
                 onRetry = { viewModel.refresh() },
                 modifier = Modifier.padding(paddingValues)
             )
@@ -101,13 +105,13 @@ fun UserStarredReposScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         Icons.Rounded.Star,
-                        contentDescription = "No starred repositories",
+                        contentDescription = strings.getNoResults(context),
                         modifier = Modifier.size(48.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "No starred repositories",
+                        text = strings.getNoRepositoriesFound(context),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -123,7 +127,7 @@ fun UserStarredReposScreen(
             ) {
                 item {
                     Text(
-                        text = "${state.repos.size} starred repository(ies)",
+                        text = strings.getStarredRepositoryFormat(context, state.repos.size),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 8.dp)
@@ -152,7 +156,7 @@ fun UserStarredReposScreen(
                                 CircularProgressIndicator()
                             } else {
                                 Button(onClick = { viewModel.loadMore() }) {
-                                    Text("Load More")
+                                    Text(strings.getLoadMore(context))
                                 }
                             }
                         }

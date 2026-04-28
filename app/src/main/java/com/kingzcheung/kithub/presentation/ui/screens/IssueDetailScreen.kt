@@ -13,10 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.domain.model.Issue
 import com.kingzcheung.kithub.domain.model.IssueLabel
 import com.kingzcheung.kithub.domain.model.IssueState
@@ -30,6 +32,8 @@ fun IssueDetailScreen(
     viewModel: IssueDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    val strings = LocalStrings.current
     
     Scaffold(
         topBar = {
@@ -44,13 +48,13 @@ fun IssueDetailScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = strings.getBack(context))
                     }
                 },
                 actions = {
                     if (state.issue != null) {
                         IconButton(onClick = {}) {
-                            Icon(Icons.Default.Share, contentDescription = "Share")
+                            Icon(Icons.Default.Share, contentDescription = strings.getShare(context))
                         }
                     }
                 }
@@ -76,7 +80,7 @@ fun IssueDetailScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         Icons.Default.Error,
-                        contentDescription = "Error",
+                        contentDescription = strings.getUnknown(context),
                         modifier = Modifier.size(48.dp),
                         tint = MaterialTheme.colorScheme.error
                     )
@@ -88,7 +92,7 @@ fun IssueDetailScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = { viewModel.loadIssue() }) {
-                        Text("Retry")
+                        Text(strings.getRetry(context))
                     }
                 }
             }
@@ -96,7 +100,9 @@ fun IssueDetailScreen(
             IssueDetailContent(
                 issue = state.issue!!,
                 paddingValues = paddingValues,
-                onNavigateToUser = onNavigateToUser
+                onNavigateToUser = onNavigateToUser,
+                strings = strings,
+                context = context
             )
         }
     }
@@ -106,7 +112,9 @@ fun IssueDetailScreen(
 fun IssueDetailContent(
     issue: Issue,
     paddingValues: PaddingValues,
-    onNavigateToUser: (String) -> Unit = {}
+    onNavigateToUser: (String) -> Unit = {},
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     LazyColumn(
         modifier = Modifier
@@ -115,7 +123,7 @@ fun IssueDetailContent(
         contentPadding = PaddingValues(16.dp)
     ) {
         item {
-            IssueHeader(issue = issue)
+            IssueHeader(issue = issue, strings = strings, context = context)
         }
         
         item {
@@ -123,7 +131,7 @@ fun IssueDetailContent(
         }
         
         item {
-            IssueMetaInfo(issue = issue)
+            IssueMetaInfo(issue = issue, strings = strings, context = context)
         }
         
         item {
@@ -133,7 +141,7 @@ fun IssueDetailContent(
         if (issue.labels.isNotEmpty()) {
             item {
                 Text(
-                    text = "Labels",
+                    text = strings.getLabels(context),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -146,7 +154,7 @@ fun IssueDetailContent(
         if (issue.body != null && issue.body.isNotEmpty()) {
             item {
                 Text(
-                    text = "Description",
+                    text = strings.getDescription(context),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -170,7 +178,7 @@ fun IssueDetailContent(
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Assignees",
+                    text = strings.getAssignees(context),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -185,7 +193,7 @@ fun IssueDetailContent(
         item {
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "${issue.comments} comments",
+                text = strings.getCommentsFormat(context, issue.comments),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -194,11 +202,15 @@ fun IssueDetailContent(
 }
 
 @Composable
-fun IssueHeader(issue: Issue) {
+fun IssueHeader(
+    issue: Issue,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IssueStateBadge(state = issue.state)
+        IssueStateBadge(state = issue.state, strings = strings, context = context)
         Spacer(modifier = Modifier.width(12.dp))
         Text(
             text = issue.title,
@@ -210,22 +222,26 @@ fun IssueHeader(issue: Issue) {
 }
 
 @Composable
-fun IssueStateBadge(state: IssueState) {
+fun IssueStateBadge(
+    state: IssueState,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
+) {
     val (color, icon, text) = when (state) {
         IssueState.OPEN -> Triple(
             Color(0xFF238636),
             Icons.Default.CheckCircle,
-            "Open"
+            strings.getOpen(context)
         )
         IssueState.CLOSED -> Triple(
             Color(0xFFDA3633),
             Icons.Default.Cancel,
-            "Closed"
+            strings.getClosed(context)
         )
         IssueState.REOPENED -> Triple(
             Color(0xFF238636),
             Icons.Default.Refresh,
-            "Reopened"
+            strings.getOpen(context)
         )
     }
     
@@ -255,7 +271,9 @@ fun IssueStateBadge(state: IssueState) {
 
 @Composable
 fun IssueMetaInfo(
-    issue: Issue
+    issue: Issue,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically
@@ -279,7 +297,7 @@ fun IssueMetaInfo(
                         .padding(end = 4.dp)
                 )
                 Text(
-                    text = "opened this issue",
+                    text = strings.getOpenedThisIssue(context),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

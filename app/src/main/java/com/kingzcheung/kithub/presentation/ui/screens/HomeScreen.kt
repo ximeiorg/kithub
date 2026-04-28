@@ -20,12 +20,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.domain.model.Event
 import com.kingzcheung.kithub.domain.model.Repository
+import com.kingzcheung.kithub.domain.model.EventType
 import com.kingzcheung.kithub.presentation.ui.components.RepositoryCard
 import com.kingzcheung.kithub.presentation.ui.components.formatRelativeTime
 import com.kingzcheung.kithub.presentation.viewmodel.HomeViewModel
@@ -42,6 +45,8 @@ fun HomeScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val pullToRefreshState = rememberPullToRefreshState()
+    val context = LocalContext.current
+    val strings = LocalStrings.current
     
     LaunchedEffect(pullToRefreshState.isRefreshing) {
         if (pullToRefreshState.isRefreshing) {
@@ -83,7 +88,7 @@ fun HomeScreen(
                 },
                 actions = {
                     IconButton(onClick = onNavigateToSearch) {
-                        Icon(Icons.Default.Search, contentDescription = "Search")
+                        Icon(Icons.Default.Search, contentDescription = strings.getSearch(context))
                     }
                 }
             )
@@ -113,14 +118,16 @@ fun HomeScreen(
                     item {
                         QuickAccessSection(
                             onNavigateToIssues = onNavigateToIssues,
-                            onNavigateToPullRequests = onNavigateToPullRequests
+                            onNavigateToPullRequests = onNavigateToPullRequests,
+                            context = context,
+                            strings = strings
                         )
                     }
                     
                     if (state.repos.isNotEmpty()) {
                         item {
                             SectionHeader(
-                                title = "Your Repositories",
+                                title = strings.getYourRepositories(context),
                                 icon = Icons.Outlined.Folder,
                                 count = state.repos.size
                             )
@@ -139,7 +146,7 @@ fun HomeScreen(
                     if (state.starred.isNotEmpty()) {
                         item {
                             SectionHeader(
-                                title = "Starred",
+                                title = strings.getStarred(context),
                                 icon = Icons.Outlined.Star,
                                 count = state.starred.size
                             )
@@ -158,7 +165,7 @@ fun HomeScreen(
                     if (state.events.isNotEmpty()) {
                         item {
                             SectionHeader(
-                                title = "Recent Activity",
+                                title = strings.getRecentActivity(context),
                                 icon = Icons.Outlined.Notifications,
                                 count = state.events.size
                             )
@@ -182,7 +189,9 @@ fun HomeScreen(
                                     event.actor?.login?.let { login ->
                                         onNavigateToUser(login)
                                     }
-                                }
+                                },
+                                context = context,
+                                strings = strings
                             )
                         }
                     }
@@ -190,7 +199,7 @@ fun HomeScreen(
                     if (state.orgs.isNotEmpty()) {
                         item {
                             SectionHeader(
-                                title = "Organizations",
+                                title = strings.getOrganizations(context),
                                 icon = Icons.Outlined.Groups,
                                 count = state.orgs.size
                             )
@@ -220,11 +229,13 @@ fun HomeScreen(
 @Composable
 fun QuickAccessSection(
     onNavigateToIssues: () -> Unit,
-    onNavigateToPullRequests: () -> Unit
+    onNavigateToPullRequests: () -> Unit,
+    context: android.content.Context,
+    strings: com.kingzcheung.kithub.util.Strings
 ) {
     Column {
         Text(
-            text = "Quick Access",
+            text = strings.getQuickAccess(context),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary
         )
@@ -235,14 +246,14 @@ fun QuickAccessSection(
         ) {
             QuickAccessCard(
                 modifier = Modifier.weight(1f),
-                title = "Issues",
+                title = strings.getIssues(context),
                 icon = Icons.Outlined.BugReport,
                 color = MaterialTheme.colorScheme.error,
                 onClick = onNavigateToIssues
             )
             QuickAccessCard(
                 modifier = Modifier.weight(1f),
-                title = "Pull Requests",
+                title = strings.getPulls(context),
                 icon = Icons.AutoMirrored.Outlined.CallSplit,
                 color = MaterialTheme.colorScheme.primary,
                 onClick = onNavigateToPullRequests
@@ -325,7 +336,9 @@ fun EventCard(
     event: Event,
     onRepoClick: () -> Unit,
     onUserClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    context: android.content.Context,
+    strings: com.kingzcheung.kithub.util.Strings
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -360,7 +373,7 @@ fun EventCard(
                     Spacer(modifier = Modifier.width(8.dp))
                 }
                 Text(
-                    text = getEventActionText(event.type),
+                    text = getEventActionText(event.type, context, strings),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -430,20 +443,20 @@ fun OrganizationCard(
     }
 }
 
-fun getEventActionText(type: com.kingzcheung.kithub.domain.model.EventType): String {
+fun getEventActionText(type: EventType, context: android.content.Context, strings: com.kingzcheung.kithub.util.Strings): String {
     return when (type) {
-        com.kingzcheung.kithub.domain.model.EventType.PushEvent -> "pushed to"
-        com.kingzcheung.kithub.domain.model.EventType.PullRequestEvent -> "opened PR in"
-        com.kingzcheung.kithub.domain.model.EventType.IssuesEvent -> "opened issue in"
-        com.kingzcheung.kithub.domain.model.EventType.WatchEvent -> "starred"
-        com.kingzcheung.kithub.domain.model.EventType.ForkEvent -> "forked"
-        com.kingzcheung.kithub.domain.model.EventType.CreateEvent -> "created"
-        com.kingzcheung.kithub.domain.model.EventType.DeleteEvent -> "deleted"
-        com.kingzcheung.kithub.domain.model.EventType.ReleaseEvent -> "released"
-        com.kingzcheung.kithub.domain.model.EventType.IssueCommentEvent -> "commented on"
-        com.kingzcheung.kithub.domain.model.EventType.CommitCommentEvent -> "commented on commit in"
-        com.kingzcheung.kithub.domain.model.EventType.PullRequestReviewEvent -> "reviewed PR in"
-        com.kingzcheung.kithub.domain.model.EventType.PullRequestReviewCommentEvent -> "commented on PR in"
-        else -> "acted on"
+        EventType.PushEvent -> strings.getPushedTo(context)
+        EventType.PullRequestEvent -> strings.getOpenedPrIn(context)
+        EventType.IssuesEvent -> strings.getOpenedIssueIn(context)
+        EventType.WatchEvent -> strings.getStarredRepo(context)
+        EventType.ForkEvent -> strings.getForked(context)
+        EventType.CreateEvent -> strings.getCreated(context)
+        EventType.DeleteEvent -> strings.getDeleted(context)
+        EventType.ReleaseEvent -> strings.getReleased(context)
+        EventType.IssueCommentEvent -> strings.getCommentedOn(context)
+        EventType.CommitCommentEvent -> strings.getCommentedOnCommitIn(context)
+        EventType.PullRequestReviewEvent -> strings.getReviewedPrIn(context)
+        EventType.PullRequestReviewCommentEvent -> strings.getCommentedOnPrIn(context)
+        else -> strings.getActedOn(context)
     }
 }

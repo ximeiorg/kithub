@@ -14,10 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.domain.model.Commit
 import com.kingzcheung.kithub.domain.model.CommitFile
 import com.kingzcheung.kithub.domain.model.CommitStats
@@ -31,25 +33,27 @@ fun CommitDetailScreen(
     viewModel: CommitDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    val strings = LocalStrings.current
     
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Commit",
+                        text = strings.getCommits(context),
                         style = MaterialTheme.typography.titleMedium
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = strings.getBack(context))
                     }
                 },
                 actions = {
                     if (state.commit != null) {
                         IconButton(onClick = {}) {
-                            Icon(Icons.Default.Share, contentDescription = "Share")
+                            Icon(Icons.Default.Share, contentDescription = strings.getShare(context))
                         }
                     }
                 }
@@ -75,7 +79,7 @@ fun CommitDetailScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         Icons.Default.Error,
-                        contentDescription = "Error",
+                        contentDescription = strings.getUnknown(context),
                         modifier = Modifier.size(48.dp),
                         tint = MaterialTheme.colorScheme.error
                     )
@@ -87,14 +91,16 @@ fun CommitDetailScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = { viewModel.loadCommit() }) {
-                        Text("Retry")
+                        Text(strings.getRetry(context))
                     }
                 }
             }
         } else if (state.commit != null) {
             CommitDetailContent(
                 commit = state.commit!!,
-                paddingValues = paddingValues
+                paddingValues = paddingValues,
+                strings = strings,
+                context = context
             )
         }
     }
@@ -103,7 +109,9 @@ fun CommitDetailScreen(
 @Composable
 fun CommitDetailContent(
     commit: Commit,
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     LazyColumn(
         modifier = Modifier
@@ -120,13 +128,13 @@ fun CommitDetailContent(
         }
         
         item {
-            CommitAuthorInfo(commit = commit)
+            CommitAuthorInfo(commit = commit, strings = strings, context = context)
         }
         
         if (commit.stats != null) {
             item {
                 Spacer(modifier = Modifier.height(16.dp))
-                CommitStatsCard(stats = commit.stats)
+                CommitStatsCard(stats = commit.stats, strings = strings, context = context)
             }
         }
         
@@ -134,7 +142,7 @@ fun CommitDetailContent(
             item {
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    text = "Changed files (${commit.files.size})",
+                    text = strings.getChangedFiles(context, commit.files.size),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -175,20 +183,24 @@ fun CommitHeader(commit: Commit) {
 }
 
 @Composable
-fun CommitAuthorInfo(commit: Commit) {
+fun CommitAuthorInfo(
+    commit: Commit,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
+) {
     Column {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 Icons.Default.Person,
-                contentDescription = "Author",
+                contentDescription = strings.getAuthor(context),
                 modifier = Modifier.size(20.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Author",
+                text = strings.getAuthor(context),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -226,13 +238,13 @@ fun CommitAuthorInfo(commit: Commit) {
         ) {
             Icon(
                 Icons.Default.Person,
-                contentDescription = "Committer",
+                contentDescription = strings.getCommitter(context),
                 modifier = Modifier.size(20.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Committer",
+                text = strings.getCommitter(context),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -266,23 +278,27 @@ fun CommitAuthorInfo(commit: Commit) {
 }
 
 @Composable
-fun CommitStatsCard(stats: CommitStats) {
+fun CommitStatsCard(
+    stats: CommitStats,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         StatCard(
-            label = "Additions",
+            label = strings.getAdditions(context),
             value = "+${stats.additions}",
             color = Color(0xFF238636)
         )
         StatCard(
-            label = "Deletions",
+            label = strings.getDeletions(context),
             value = "-${stats.deletions}",
             color = Color(0xFFDA3633)
         )
         StatCard(
-            label = "Total",
+            label = strings.getTotalChanges(context),
             value = "${stats.total}",
             color = MaterialTheme.colorScheme.primary
         )

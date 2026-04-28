@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.data.store.AppLanguage
 import com.kingzcheung.kithub.data.store.ThemeMode
 import com.kingzcheung.kithub.presentation.theme.ThemeColor
@@ -36,6 +37,7 @@ fun SettingsScreen(
     settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val strings = LocalStrings.current
     val settings by settingsViewModel.settings.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
@@ -46,7 +48,7 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") }
+                title = { Text(strings.getSettings(context)) }
             )
         }
     ) { paddingValues ->
@@ -58,36 +60,36 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             item {
-                SettingsSectionHeader(title = "General")
+                SettingsSectionHeader(title = strings.getGeneral(context))
             }
             
             item {
                 SettingsGroupCard {
                     SettingsItemClickable(
                         icon = Icons.Default.Palette,
-                        title = "Theme",
-                        subtitle = getThemeDisplayText(settings.themeMode),
+                        title = strings.getTheme(context),
+                        subtitle = getThemeDisplayText(settings.themeMode, context, strings),
                         onClick = { showThemeDialog = true }
                     )
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
                     SettingsItemClickable(
                         icon = Icons.Default.ColorLens,
-                        title = "Theme Color",
+                        title = strings.getThemeColor(context),
                         subtitle = settings.themeColor.displayName,
                         onClick = { showThemeColorDialog = true }
                     )
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
                     SettingsItemClickable(
                         icon = Icons.Default.Language,
-                        title = "Language",
-                        subtitle = getLanguageDisplayText(settings.appLanguage),
+                        title = strings.getLanguage(context),
+                        subtitle = getLanguageDisplayText(settings.appLanguage, context, strings),
                         onClick = { showLanguageDialog = true }
                     )
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
                     SettingsItemClickable(
                         icon = Icons.Default.Code,
-                        title = "Code Options",
-                        subtitle = "Line numbers, word wrap, theme",
+                        title = strings.getCodeOptions(context),
+                        subtitle = strings.getCodeOptionsSubtitle(context),
                         onClick = { showCodeOptionsDialog = true }
                     )
                 }
@@ -95,7 +97,7 @@ fun SettingsScreen(
             
             item {
                 Spacer(modifier = Modifier.height(16.dp))
-                SettingsSectionHeader(title = "Account")
+                SettingsSectionHeader(title = strings.getAccount(context))
             }
             
             item {
@@ -106,15 +108,15 @@ fun SettingsScreen(
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Person, contentDescription = "Account")
+                        Icon(Icons.Default.Person, contentDescription = strings.getAccount(context))
                         Spacer(modifier = Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "GitHub Account",
+                                text = strings.getGithubAccount(context),
                                 style = MaterialTheme.typography.bodyLarge
                             )
                             Text(
-                                text = "Logged in",
+                                text = strings.getLoggedIn(context),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -130,12 +132,12 @@ fun SettingsScreen(
                     ) {
                         Icon(
                             Icons.AutoMirrored.Filled.Logout,
-                            contentDescription = "Logout",
+                            contentDescription = strings.getLogout(context),
                             tint = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = "Logout",
+                            text = strings.getLogout(context),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.error
                         )
@@ -145,29 +147,29 @@ fun SettingsScreen(
             
             item {
                 Spacer(modifier = Modifier.height(16.dp))
-                SettingsSectionHeader(title = "About")
+                SettingsSectionHeader(title = strings.getAbout(context))
             }
             
             item {
                 SettingsGroupCard {
                     SettingsItemClickable(
                         icon = Icons.Default.Code,
-                        title = "Source Code",
-                        subtitle = "View on GitHub",
+                        title = strings.getSourceCode(context),
+                        subtitle = strings.getViewOnGithub(context),
                         onClick = { openUrl(context, "https://github.com/kingzcheung/kithub") }
                     )
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
                     SettingsItemClickable(
                         icon = Icons.Default.BugReport,
-                        title = "Report Bug",
-                        subtitle = "Submit an issue",
+                        title = strings.getReportBug(context),
+                        subtitle = strings.getSubmitIssue(context),
                         onClick = { openUrl(context, "https://github.com/kingzcheung/kithub/issues") }
                     )
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
                     SettingsItemClickable(
                         icon = Icons.Default.Info,
-                        title = "GitHub API Docs",
-                        subtitle = "REST API documentation",
+                        title = strings.getGithubApiDocs(context),
+                        subtitle = strings.getRestApiDocs(context),
                         onClick = { openUrl(context, "https://docs.github.com/en/rest") }
                     )
                 }
@@ -176,7 +178,7 @@ fun SettingsScreen(
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Version 1.0.0",
+                    text = strings.getVersion(context, "1.0.0"),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 16.dp)
@@ -188,8 +190,8 @@ fun SettingsScreen(
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text("Logout") },
-            text = { Text("Are you sure you want to logout from your GitHub account?") },
+            title = { Text(strings.getLogoutConfirmTitle(context)) },
+            text = { Text(strings.getLogoutConfirmMessage(context)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -198,12 +200,12 @@ fun SettingsScreen(
                         showLogoutDialog = false
                     }
                 ) {
-                    Text("Logout")
+                    Text(strings.getLogout(context))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showLogoutDialog = false }) {
-                    Text("Cancel")
+                    Text(strings.getCancel(context))
                 }
             }
         )
@@ -216,7 +218,9 @@ fun SettingsScreen(
                 settingsViewModel.setThemeMode(mode)
                 showThemeDialog = false
             },
-            onDismiss = { showThemeDialog = false }
+            onDismiss = { showThemeDialog = false },
+            context = context,
+            strings = strings
         )
     }
     
@@ -227,7 +231,9 @@ fun SettingsScreen(
                 settingsViewModel.setAppLanguage(lang)
                 showLanguageDialog = false
             },
-            onDismiss = { showLanguageDialog = false }
+            onDismiss = { showLanguageDialog = false },
+            context = context,
+            strings = strings
         )
     }
     
@@ -236,7 +242,9 @@ fun SettingsScreen(
             currentSettings = settings,
             onWrapChanged = { settingsViewModel.setCodeWrap(it) },
             onLineNumbersChanged = { settingsViewModel.setCodeLineNumbers(it) },
-            onDismiss = { showCodeOptionsDialog = false }
+            onDismiss = { showCodeOptionsDialog = false },
+            context = context,
+            strings = strings
         )
     }
     
@@ -247,7 +255,9 @@ fun SettingsScreen(
                 settingsViewModel.setThemeColor(color)
                 showThemeColorDialog = false
             },
-            onDismiss = { showThemeColorDialog = false }
+            onDismiss = { showThemeColorDialog = false },
+            context = context,
+            strings = strings
         )
     }
 }
@@ -321,11 +331,13 @@ fun SettingsItemClickable(
 fun ThemeSelectionDialog(
     currentTheme: ThemeMode,
     onThemeSelected: (ThemeMode) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    context: Context,
+    strings: com.kingzcheung.kithub.util.Strings
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Theme") },
+        title = { Text(strings.getTheme(context)) },
         text = {
             Column {
                 ThemeMode.values().forEach { mode ->
@@ -346,7 +358,7 @@ fun ThemeSelectionDialog(
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = getThemeDisplayText(mode),
+                            text = getThemeDisplayText(mode, context, strings),
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
@@ -355,7 +367,7 @@ fun ThemeSelectionDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Done")
+                Text(strings.getDone(context))
             }
         }
     )
@@ -365,11 +377,13 @@ fun ThemeSelectionDialog(
 fun LanguageSelectionDialog(
     currentLanguage: AppLanguage,
     onLanguageSelected: (AppLanguage) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    context: Context,
+    strings: com.kingzcheung.kithub.util.Strings
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Language") },
+        title = { Text(strings.getLanguage(context)) },
         text = {
             Column {
                 AppLanguage.values().forEach { lang ->
@@ -390,7 +404,7 @@ fun LanguageSelectionDialog(
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = getLanguageDisplayText(lang),
+                            text = getLanguageDisplayText(lang, context, strings),
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
@@ -399,7 +413,7 @@ fun LanguageSelectionDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Done")
+                Text(strings.getDone(context))
             }
         }
     )
@@ -410,14 +424,16 @@ fun CodeOptionsDialog(
     currentSettings: AppSettings,
     onWrapChanged: (Boolean) -> Unit,
     onLineNumbersChanged: (Boolean) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    context: Context,
+    strings: com.kingzcheung.kithub.util.Strings
 ) {
     var wrap by remember { mutableStateOf(currentSettings.codeWrap) }
     var lineNumbers by remember { mutableStateOf(currentSettings.codeLineNumbers) }
     
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Code Options") },
+        title = { Text(strings.getCodeOptions(context)) },
         text = {
             Column {
                 Row(
@@ -439,7 +455,7 @@ fun CodeOptionsDialog(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "Word wrap",
+                        text = strings.getWordWrap(context),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -462,7 +478,7 @@ fun CodeOptionsDialog(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "Line numbers",
+                        text = strings.getLineNumbers(context),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -470,7 +486,7 @@ fun CodeOptionsDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Done")
+                Text(strings.getDone(context))
             }
         }
     )
@@ -480,11 +496,13 @@ fun CodeOptionsDialog(
 fun ThemeColorSelectionDialog(
     currentColor: ThemeColor,
     onColorSelected: (ThemeColor) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    context: Context,
+    strings: com.kingzcheung.kithub.util.Strings
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Theme Color") },
+        title = { Text(strings.getThemeColor(context)) },
         text = {
             Column {
                 ThemeColor.values().forEach { color ->
@@ -523,25 +541,25 @@ fun ThemeColorSelectionDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Done")
+                Text(strings.getDone(context))
             }
         }
     )
 }
 
-fun getThemeDisplayText(mode: ThemeMode): String {
+fun getThemeDisplayText(mode: ThemeMode, context: Context, strings: com.kingzcheung.kithub.util.Strings): String {
     return when (mode) {
-        ThemeMode.LIGHT -> "Light"
-        ThemeMode.DARK -> "Dark"
-        ThemeMode.SYSTEM -> "Follow system"
+        ThemeMode.LIGHT -> strings.getLight(context)
+        ThemeMode.DARK -> strings.getDark(context)
+        ThemeMode.SYSTEM -> strings.getFollowSystem(context)
     }
 }
 
-fun getLanguageDisplayText(lang: AppLanguage): String {
+fun getLanguageDisplayText(lang: AppLanguage, context: Context, strings: com.kingzcheung.kithub.util.Strings): String {
     return when (lang) {
-        AppLanguage.ENGLISH -> "English"
-        AppLanguage.CHINESE -> "中文"
-        AppLanguage.SYSTEM -> "Follow system"
+        AppLanguage.ENGLISH -> strings.getEnglish(context)
+        AppLanguage.CHINESE -> strings.getChinese(context)
+        AppLanguage.SYSTEM -> strings.getFollowSystem(context)
     }
 }
 

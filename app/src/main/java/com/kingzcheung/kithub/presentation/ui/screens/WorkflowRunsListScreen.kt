@@ -9,10 +9,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.domain.model.WorkflowRun
 import com.kingzcheung.kithub.domain.model.WorkflowRunConclusion
 import com.kingzcheung.kithub.domain.model.WorkflowRunStatus
@@ -24,6 +26,8 @@ fun WorkflowRunsListScreen(
     viewModel: WorkflowRunsListViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    val strings = LocalStrings.current
     var showFilterMenu by remember { mutableStateOf(false) }
     
     Scaffold(
@@ -31,21 +35,21 @@ fun WorkflowRunsListScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        text = state.workflowName.ifEmpty { "Workflow Runs" },
+                        text = state.workflowName.ifEmpty { strings.getWorkflowRuns(context) },
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     ) 
                 },
                 actions = {
                     IconButton(onClick = { showFilterMenu = true }) {
-                        Icon(Icons.Default.FilterList, contentDescription = "Filter")
+                        Icon(Icons.Default.FilterList, contentDescription = strings.getFilter(context))
                     }
                     DropdownMenu(
                         expanded = showFilterMenu,
                         onDismissRequest = { showFilterMenu = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("All") },
+                            text = { Text(context.getString(com.kingzcheung.kithub.R.string.all)) },
                             onClick = {
                                 viewModel.setStatusFilter(null)
                                 showFilterMenu = false
@@ -57,7 +61,7 @@ fun WorkflowRunsListScreen(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Completed") },
+                            text = { Text(strings.getCompletedFilter(context)) },
                             onClick = {
                                 viewModel.setStatusFilter("completed")
                                 showFilterMenu = false
@@ -69,7 +73,7 @@ fun WorkflowRunsListScreen(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Running") },
+                            text = { Text(strings.getRunningFilter(context)) },
                             onClick = {
                                 viewModel.setStatusFilter("in_progress")
                                 showFilterMenu = false
@@ -81,7 +85,7 @@ fun WorkflowRunsListScreen(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Queued") },
+                            text = { Text(strings.getQueuedFilter(context)) },
                             onClick = {
                                 viewModel.setStatusFilter("queued")
                                 showFilterMenu = false
@@ -94,7 +98,7 @@ fun WorkflowRunsListScreen(
                         )
                     }
                     IconButton(onClick = { viewModel.refresh() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                        Icon(Icons.Default.Refresh, contentDescription = strings.getRefresh(context))
                     }
                 }
             )
@@ -119,13 +123,13 @@ fun WorkflowRunsListScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         Icons.Default.History,
-                        contentDescription = "No runs",
+                        contentDescription = strings.getNoResults(context),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(48.dp)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "No workflow runs found",
+                        text = context.getString(com.kingzcheung.kithub.R.string.no_workflow_runs),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -142,14 +146,14 @@ fun WorkflowRunsListScreen(
                 if (state.totalCount > 0) {
                     item {
                         val filterText = when (state.statusFilter) {
-                            "completed" -> "completed"
-                            "in_progress" -> "running"
-                            "queued" -> "queued"
-                            null -> "total"
+                            "completed" -> strings.getCompletedFilter(context)
+                            "in_progress" -> strings.getRunningFilter(context)
+                            "queued" -> strings.getQueuedFilter(context)
+                            null -> strings.getTotalFilter(context)
                             else -> state.statusFilter
                         }
                         Text(
-                            text = "${state.totalCount} $filterText run(s)",
+                            text = strings.getRunFormat(context, state.totalCount).replace("%d", "${state.totalCount}") + " $filterText",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 8.dp)
@@ -161,7 +165,7 @@ fun WorkflowRunsListScreen(
                     items = state.workflowRuns,
                     key = { it.id }
                 ) { run ->
-                    WorkflowRunCard(run = run)
+                    WorkflowRunCard(run = run, strings = strings, context = context)
                 }
                 
                 if (state.hasMore) {
@@ -176,7 +180,7 @@ fun WorkflowRunsListScreen(
                                 CircularProgressIndicator()
                             } else {
                                 Button(onClick = { viewModel.loadMore() }) {
-                                    Text("Load More")
+                                    Text(strings.getLoadMore(context))
                                 }
                             }
                         }
@@ -190,6 +194,8 @@ fun WorkflowRunsListScreen(
 @Composable
 fun WorkflowRunCard(
     run: WorkflowRun,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -261,7 +267,9 @@ fun WorkflowRunCard(
                 
                 ConclusionBadge(
                     conclusion = run.conclusion,
-                    status = run.status
+                    status = run.status,
+                    strings = strings,
+                    context = context
                 )
             }
             
@@ -339,25 +347,27 @@ fun StatusIcon(
 @Composable
 fun ConclusionBadge(
     conclusion: WorkflowRunConclusion?,
-    status: WorkflowRunStatus
+    status: WorkflowRunStatus,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     val (text, backgroundColor, textColor) = when {
         status == WorkflowRunStatus.IN_PROGRESS -> 
-            Triple("Running", MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer)
+            Triple(strings.getRunningFilter(context), MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer)
         status == WorkflowRunStatus.QUEUED -> 
-            Triple("Queued", MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
+            Triple(strings.getQueuedFilter(context), MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
         conclusion == WorkflowRunConclusion.SUCCESS -> 
-            Triple("Success", MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f), MaterialTheme.colorScheme.primary)
+            Triple(context.getString(com.kingzcheung.kithub.R.string.success), MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f), MaterialTheme.colorScheme.primary)
         conclusion == WorkflowRunConclusion.FAILURE -> 
-            Triple("Failed", MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.7f), MaterialTheme.colorScheme.error)
+            Triple(context.getString(com.kingzcheung.kithub.R.string.failed), MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.7f), MaterialTheme.colorScheme.error)
         conclusion == WorkflowRunConclusion.CANCELLED -> 
-            Triple("Cancelled", MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
+            Triple(context.getString(com.kingzcheung.kithub.R.string.cancelled), MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
         conclusion == WorkflowRunConclusion.TIMED_OUT -> 
-            Triple("Timed Out", MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.7f), MaterialTheme.colorScheme.error)
+            Triple(context.getString(com.kingzcheung.kithub.R.string.timed_out), MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.7f), MaterialTheme.colorScheme.error)
         conclusion == WorkflowRunConclusion.SKIPPED -> 
-            Triple("Skipped", MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
+            Triple(context.getString(com.kingzcheung.kithub.R.string.skipped), MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
         else -> 
-            Triple("Unknown", MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
+            Triple(strings.getUnknown(context), MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
     }
     
     Surface(

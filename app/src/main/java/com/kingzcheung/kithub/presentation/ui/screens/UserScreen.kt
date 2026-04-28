@@ -9,8 +9,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.domain.model.UserBrief
 import com.kingzcheung.kithub.presentation.ui.components.*
 import com.kingzcheung.kithub.presentation.viewmodel.UserViewModel
@@ -24,15 +26,17 @@ fun UserScreen(
     viewModel: UserViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    val strings = LocalStrings.current
     var selectedTab by remember { mutableStateOf(0) }
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(state.user?.login ?: "Profile") },
+                title = { Text(state.user?.login ?: strings.getProfile(context)) },
                 actions = {
                     IconButton(onClick = { }) {
-                        Icon(Icons.Default.Share, contentDescription = "Share")
+                        Icon(Icons.Default.Share, contentDescription = strings.getShare(context))
                     }
                 }
             )
@@ -65,7 +69,7 @@ fun UserScreen(
                             Card {
                                 Column(modifier = Modifier.padding(16.dp)) {
                                     Text(
-                                        text = "Bio",
+                                        text = strings.getBio(context),
                                         style = MaterialTheme.typography.titleSmall
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
@@ -114,22 +118,22 @@ fun UserScreen(
                             FilterChip(
                                 selected = selectedTab == 0,
                                 onClick = { selectedTab = 0 },
-                                label = { Text("Repos (${user.publicRepos})") }
+                                label = { Text(strings.getReposCount(context, user.publicRepos)) }
                             )
                             FilterChip(
                                 selected = selectedTab == 1,
                                 onClick = { selectedTab = 1; viewModel.loadStarred() },
-                                label = { Text("Starred") }
+                                label = { Text(strings.getStarredTab(context)) }
                             )
                             FilterChip(
                                 selected = selectedTab == 2,
                                 onClick = { selectedTab = 2; viewModel.loadFollowers() },
-                                label = { Text("Followers") }
+                                label = { Text(strings.getFollowersTab(context)) }
                             )
                             FilterChip(
                                 selected = selectedTab == 3,
                                 onClick = { selectedTab = 3; viewModel.loadFollowing() },
-                                label = { Text("Following") }
+                                label = { Text(strings.getFollowingTab(context)) }
                             )
                         }
                     }
@@ -149,7 +153,7 @@ fun UserScreen(
                                         onClick = { viewModel.loadMoreRepos() },
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Text("Load More")
+                                        Text(strings.getLoadMore(context))
                                     }
                                 }
                             }

@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.domain.model.Release
 import com.kingzcheung.kithub.domain.model.ReleaseAsset
 import com.kingzcheung.kithub.presentation.ui.components.UserAvatar
@@ -34,19 +35,21 @@ fun ReleasesListScreen(
     viewModel: ReleasesListViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    val strings = LocalStrings.current
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Releases") },
+                title = { Text(strings.getReleases(context)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = strings.getBack(context))
                     }
                 },
                 actions = {
                     IconButton(onClick = { viewModel.refresh() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                        Icon(Icons.Default.Refresh, contentDescription = strings.getRefresh(context))
                     }
                 }
             )
@@ -71,13 +74,13 @@ fun ReleasesListScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         Icons.Outlined.NewReleases,
-                        contentDescription = "No releases",
+                        contentDescription = strings.getNoResults(context),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(48.dp)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "No releases found",
+                        text = strings.getNoReleasesFound(context),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -95,7 +98,7 @@ fun ReleasesListScreen(
                     items = state.releases,
                     key = { it.id }
                 ) { release ->
-                    ReleaseCard(release = release)
+                    ReleaseCard(release = release, strings = strings, context = context)
                 }
                 
                 if (state.hasMore) {
@@ -110,7 +113,7 @@ fun ReleasesListScreen(
                                 CircularProgressIndicator()
                             } else {
                                 Button(onClick = { viewModel.loadMore() }) {
-                                    Text("Load More")
+                                    Text(strings.getLoadMore(context))
                                 }
                             }
                         }
@@ -124,7 +127,9 @@ fun ReleasesListScreen(
 @Composable
 fun ReleaseCard(
     release: Release,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -164,7 +169,7 @@ fun ReleaseCard(
                                 color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f)
                             ) {
                                 Text(
-                                    text = "Pre-release",
+                                    text = strings.getPreRelease(context),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.tertiary,
                                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
@@ -177,7 +182,7 @@ fun ReleaseCard(
                                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                             ) {
                                 Text(
-                                    text = "Draft",
+                                    text = strings.getDraftLabel(context),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
@@ -227,7 +232,7 @@ fun ReleaseCard(
             if (release.assets.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Assets (${release.assets.size})",
+                    text = strings.getAssetsFormat(context, release.assets.size),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

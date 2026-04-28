@@ -14,10 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.domain.model.PullRequest
 import com.kingzcheung.kithub.domain.model.PullRequestBranch
 import com.kingzcheung.kithub.presentation.viewmodel.PullRequestDetailViewModel
@@ -29,6 +31,8 @@ fun PullRequestDetailScreen(
     viewModel: PullRequestDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    val strings = LocalStrings.current
     
     Scaffold(
         topBar = {
@@ -43,13 +47,13 @@ fun PullRequestDetailScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = strings.getBack(context))
                     }
                 },
                 actions = {
                     if (state.pullRequest != null) {
                         IconButton(onClick = {}) {
-                            Icon(Icons.Default.Share, contentDescription = "Share")
+                            Icon(Icons.Default.Share, contentDescription = strings.getShare(context))
                         }
                     }
                 }
@@ -75,7 +79,7 @@ fun PullRequestDetailScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         Icons.Default.Error,
-                        contentDescription = "Error",
+                        contentDescription = strings.getUnknown(context),
                         modifier = Modifier.size(48.dp),
                         tint = MaterialTheme.colorScheme.error
                     )
@@ -87,7 +91,7 @@ fun PullRequestDetailScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = { viewModel.loadPullRequest() }) {
-                        Text("Retry")
+                        Text(strings.getRetry(context))
                     }
                 }
             }
@@ -95,7 +99,9 @@ fun PullRequestDetailScreen(
             PullRequestDetailContent(
                 pullRequest = state.pullRequest!!,
                 paddingValues = paddingValues,
-                onNavigateToUser = onNavigateToUser
+                onNavigateToUser = onNavigateToUser,
+                strings = strings,
+                context = context
             )
         }
     }
@@ -105,7 +111,9 @@ fun PullRequestDetailScreen(
 fun PullRequestDetailContent(
     pullRequest: PullRequest,
     paddingValues: PaddingValues,
-    onNavigateToUser: (String) -> Unit = {}
+    onNavigateToUser: (String) -> Unit = {},
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     LazyColumn(
         modifier = Modifier
@@ -114,7 +122,7 @@ fun PullRequestDetailContent(
         contentPadding = PaddingValues(16.dp)
     ) {
         item {
-            PullRequestHeader(pullRequest = pullRequest)
+            PullRequestHeader(pullRequest = pullRequest, strings = strings, context = context)
         }
         
         item {
@@ -122,7 +130,7 @@ fun PullRequestDetailContent(
         }
         
         item {
-            PullRequestBranchInfo(pullRequest = pullRequest)
+            PullRequestBranchInfo(pullRequest = pullRequest, strings = strings, context = context)
         }
         
         item {
@@ -130,7 +138,7 @@ fun PullRequestDetailContent(
         }
         
         item {
-            PullRequestMetaInfo(pullRequest = pullRequest, onNavigateToUser = onNavigateToUser)
+            PullRequestMetaInfo(pullRequest = pullRequest, onNavigateToUser = onNavigateToUser, strings = strings, context = context)
         }
         
         item {
@@ -138,14 +146,14 @@ fun PullRequestDetailContent(
         }
         
         item {
-            PullRequestStats(pullRequest = pullRequest)
+            PullRequestStats(pullRequest = pullRequest, strings = strings, context = context)
         }
         
         if (pullRequest.labels.isNotEmpty()) {
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Labels",
+                    text = strings.getLabels(context),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -158,7 +166,7 @@ fun PullRequestDetailContent(
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Description",
+                    text = strings.getDescription(context),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -182,7 +190,7 @@ fun PullRequestDetailContent(
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Assignees",
+                    text = strings.getAssignees(context),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -201,17 +209,17 @@ fun PullRequestDetailContent(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "${pullRequest.commits} commits",
+                    text = strings.getCommitsCount(context, pullRequest.commits),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = "${pullRequest.comments} comments",
+                    text = strings.getCommentsFormat(context, pullRequest.comments),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = "${pullRequest.reviewComments} reviews",
+                    text = strings.getReviewsFormat(context, pullRequest.reviewComments),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -221,14 +229,20 @@ fun PullRequestDetailContent(
 }
 
 @Composable
-fun PullRequestHeader(pullRequest: PullRequest) {
+fun PullRequestHeader(
+    pullRequest: PullRequest,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
         PullRequestStateBadge(
             state = pullRequest.state,
             merged = pullRequest.merged,
-            draft = pullRequest.draft
+            draft = pullRequest.draft,
+            strings = strings,
+            context = context
         )
         Spacer(modifier = Modifier.width(12.dp))
         Text(
@@ -244,35 +258,37 @@ fun PullRequestHeader(pullRequest: PullRequest) {
 fun PullRequestStateBadge(
     state: com.kingzcheung.kithub.domain.model.IssueState,
     merged: Boolean,
-    draft: Boolean
+    draft: Boolean,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     val (color, icon, text) = if (merged) {
         Triple(
             Color(0xFF6F42C1),
             Icons.Default.Merge,
-            "Merged"
+            strings.getMerged(context)
         )
     } else if (draft) {
         Triple(
             Color(0xFF808080),
             Icons.Default.Edit,
-            "Draft"
+            strings.getDraftLabel(context)
         )
     } else when (state) {
         com.kingzcheung.kithub.domain.model.IssueState.OPEN -> Triple(
             Color(0xFF238636),
             Icons.Default.CheckCircle,
-            "Open"
+            strings.getOpen(context)
         )
         com.kingzcheung.kithub.domain.model.IssueState.CLOSED -> Triple(
             Color(0xFFDA3633),
             Icons.Default.Cancel,
-            "Closed"
+            strings.getClosed(context)
         )
         com.kingzcheung.kithub.domain.model.IssueState.REOPENED -> Triple(
             Color(0xFF238636),
             Icons.Default.Refresh,
-            "Reopened"
+            strings.getOpen(context)
         )
     }
     
@@ -301,7 +317,11 @@ fun PullRequestStateBadge(
 }
 
 @Composable
-fun PullRequestBranchInfo(pullRequest: PullRequest) {
+fun PullRequestBranchInfo(
+    pullRequest: PullRequest,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -315,13 +335,13 @@ fun PullRequestBranchInfo(pullRequest: PullRequest) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            BranchInfo(branch = pullRequest.head, label = "From")
+            BranchInfo(branch = pullRequest.head, label = strings.getFromBranch(context))
             Icon(
                 Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = "to",
+                contentDescription = strings.getIntoBranch(context),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            BranchInfo(branch = pullRequest.base, label = "Into")
+            BranchInfo(branch = pullRequest.base, label = strings.getIntoBranch(context))
         }
     }
 }
@@ -360,7 +380,9 @@ fun BranchInfo(branch: PullRequestBranch, label: String) {
 @Composable
 fun PullRequestMetaInfo(
     pullRequest: PullRequest,
-    onNavigateToUser: (String) -> Unit
+    onNavigateToUser: (String) -> Unit,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically
@@ -382,7 +404,7 @@ fun PullRequestMetaInfo(
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = " wants to merge",
+                    text = " ${strings.getWantsToMerge(context)}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -397,23 +419,27 @@ fun PullRequestMetaInfo(
 }
 
 @Composable
-fun PullRequestStats(pullRequest: PullRequest) {
+fun PullRequestStats(
+    pullRequest: PullRequest,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         StatCard(
-            label = "Additions",
+            label = strings.getAdditions(context),
             value = "+${pullRequest.additions}",
             color = Color(0xFF238636)
         )
         StatCard(
-            label = "Deletions",
+            label = strings.getDeletions(context),
             value = "-${pullRequest.deletions}",
             color = Color(0xFFDA3633)
         )
         StatCard(
-            label = "Files",
+            label = strings.getFilesChanged(context),
             value = "${pullRequest.changedFiles}",
             color = MaterialTheme.colorScheme.primary
         )

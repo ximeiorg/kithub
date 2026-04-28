@@ -19,9 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.domain.model.Event
 import com.kingzcheung.kithub.domain.model.EventType
 import com.kingzcheung.kithub.domain.model.Repository
@@ -39,6 +41,8 @@ fun ExploreScreen(
     viewModel: ExploreViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    val strings = LocalStrings.current
     val listState = rememberLazyListState()
     val pullToRefreshState = rememberPullToRefreshState()
     
@@ -67,7 +71,7 @@ fun ExploreScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("Explore") },
+                title = { Text(strings.getExplore(context)) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
@@ -85,7 +89,7 @@ fun ExploreScreen(
             }
         } else if (state.error != null && state.events.isEmpty()) {
             ErrorState(
-                message = state.error ?: "Unknown error",
+                message = state.error ?: strings.getUnknown(context),
                 onRetry = { viewModel.loadEvents() },
                 modifier = Modifier.padding(paddingValues)
             )
@@ -107,12 +111,12 @@ fun ExploreScreen(
                         tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                     )
                     Text(
-                        text = "No Activity",
+                        text = strings.getNoActivity(context),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "Follow some users to see their activity here",
+                        text = strings.getFollowSomeUsers(context),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
@@ -144,7 +148,9 @@ fun ExploreScreen(
                                         onNavigateToRepository(parts[0], parts[1])
                                     }
                                 }
-                            }
+                            },
+                            strings = strings,
+                            context = context
                         )
                     }
                     
@@ -181,7 +187,9 @@ fun ExploreEventItem(
     repoDetail: Repository? = null,
     onUserClick: () -> Unit,
     onRepoClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -211,7 +219,7 @@ fun ExploreEventItem(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = event.actor?.login ?: "unknown",
+                            text = event.actor?.login ?: strings.getUnknown(context),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.primary,
                             maxLines = 1,
@@ -225,7 +233,7 @@ fun ExploreEventItem(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = getEventDescription(event),
+                            text = getEventDescription(event, strings, context),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 2,
@@ -245,7 +253,9 @@ fun ExploreEventItem(
                 EventRepoCard(
                     event = event,
                     repoDetail = repoDetail,
-                    onRepoClick = onRepoClick
+                    onRepoClick = onRepoClick,
+                    strings = strings,
+                    context = context
                 )
             }
         }
@@ -257,7 +267,9 @@ fun EventRepoCard(
     event: Event,
     repoDetail: Repository?,
     onRepoClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     Surface(
         modifier = modifier
@@ -335,7 +347,7 @@ fun EventRepoCard(
                 }
             } else {
                 Spacer(modifier = Modifier.height(8.dp))
-                EventPayloadDetails(event = event)
+                EventPayloadDetails(event = event, strings = strings, context = context)
             }
         }
     }
@@ -344,7 +356,9 @@ fun EventRepoCard(
 @Composable
 fun EventPayloadDetails(
     event: Event,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     when (event.type) {
         EventType.PushEvent -> {
@@ -356,14 +370,14 @@ fun EventPayloadDetails(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Branch: ${ref.removePrefix("refs/heads/")}",
+                        text = strings.getBranchFormat(context, ref.removePrefix("refs/heads/")),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     if (size != null && size > 0) {
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = "$size commits",
+                            text = strings.getCommitsInBranch(context, size),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -387,7 +401,7 @@ fun EventPayloadDetails(
             val refType = event.payload?.get("ref_type") as? String
             if (ref != null && refType != null) {
                 Text(
-                    text = "Deleted $refType: $ref",
+                    text = strings.getDeletedRef(context, "$refType: $ref"),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error
                 )
@@ -503,7 +517,7 @@ fun EventPayloadDetails(
                     }
                 } else {
                     Text(
-                        text = "Pull Request",
+                        text = strings.getPullRequest(context),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -568,7 +582,7 @@ fun EventPayloadDetails(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Forked to $fullName",
+                        text = strings.getForkedTo(context, fullName),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -644,42 +658,42 @@ fun EventTypeBadge(
     }
 }
 
-fun getEventDescription(event: Event): String {
+fun getEventDescription(event: Event, strings: com.kingzcheung.kithub.util.Strings, context: android.content.Context): String {
     val action = event.payload?.get("action") as? String
     return when (event.type) {
         EventType.PushEvent -> {
             val size = event.payload?.get("size") as? Int ?: 0
-            "Pushed $size commits"
+            strings.getPushedCommits(context, size)
         }
-        EventType.CreateEvent -> "Created ${event.payload?.get("ref_type") ?: "repository"}"
-        EventType.DeleteEvent -> "Deleted ${event.payload?.get("ref_type") ?: "branch"}"
-        EventType.ForkEvent -> "Forked repository"
-        EventType.WatchEvent -> "Starred repository"
-        EventType.IssuesEvent -> "${action ?: "Updated"} issue"
-        EventType.IssueCommentEvent -> "Commented on issue"
+        EventType.CreateEvent -> strings.getCreatedRef(context, "${event.payload?.get("ref_type") ?: "repository"}")
+        EventType.DeleteEvent -> strings.getDeletedRef(context, "${event.payload?.get("ref_type") ?: "branch"}")
+        EventType.ForkEvent -> strings.getForked(context) + " ${strings.getRepositories(context).lowercase()}"
+        EventType.WatchEvent -> strings.getStarredRepo(context) + " ${strings.getRepositories(context).lowercase()}"
+        EventType.IssuesEvent -> "${action ?: strings.getUnknown(context)} ${strings.getIssues(context).lowercase()}"
+        EventType.IssueCommentEvent -> strings.getCommentedOn(context) + " ${strings.getIssues(context).lowercase()}"
         EventType.PullRequestEvent -> {
             val pr = event.payload?.get("pull_request") as? Map<String, Any?>
             val number = pr?.get("number") as? Int
             val prAction = event.payload?.get("action") as? String
             val merged = pr?.get("merged") as? Boolean
             when {
-                merged == true -> "Merged PR #$number"
-                prAction == "closed" -> "Closed PR #$number"
-                prAction == "opened" -> "Opened PR #$number"
-                prAction == "reopened" -> "Reopened PR #$number"
-                else -> "Updated PR #$number"
+                merged == true -> strings.getMergedPr(context, number ?: 0)
+                prAction == "closed" -> strings.getClosedPr(context, number ?: 0)
+                prAction == "opened" -> strings.getOpenedPr(context, number ?: 0)
+                prAction == "reopened" -> strings.getReopenedPr(context, number ?: 0)
+                else -> strings.getUpdatedPr(context, number ?: 0)
             }
         }
         EventType.PullRequestReviewEvent -> {
             val reviewState = event.payload?.get("review")?.let { it as? Map<String, Any?> }?.get("state") as? String
-            "Reviewed PR ($reviewState)"
+            strings.getReviewedPr(context, reviewState ?: strings.getUnknown(context))
         }
-        EventType.PullRequestReviewCommentEvent -> "Commented on PR review"
+        EventType.PullRequestReviewCommentEvent -> strings.getCommentedOnPrReview(context)
         EventType.ReleaseEvent -> {
             val tagName = event.payload?.get("release")?.let { it as? Map<String, Any?> }?.get("tag_name") as? String
-            "Published release $tagName"
+            strings.getReleased(context) + " $tagName"
         }
-        EventType.PublicEvent -> "Made repository public"
-        else -> "Activity"
+        EventType.PublicEvent -> strings.getMadePublic(context, "${strings.getRepositories(context).lowercase()}")
+        else -> strings.getUnknown(context)
     }
 }

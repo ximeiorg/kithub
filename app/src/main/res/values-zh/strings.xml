@@ -1,0 +1,267 @@
+<resources>
+    <string name="app_name">Kithub</string>
+    <string name="github_icon">GitHub</string>
+    <string name="loading">加载中...</string>
+    <string name="error_retry">出错了，点击重试</string>
+    <string name="no_results">没有找到结果</string>
+    
+    <string name="home">首页</string>
+    <string name="search">搜索</string>
+    <string name="notifications">通知</string>
+    <string name="profile">个人主页</string>
+    <string name="settings">设置</string>
+    <string name="logout">退出登录</string>
+    <string name="dark_mode">深色模式</string>
+    
+    <string name="sign_in_github">使用 GitHub 登录</string>
+    <string name="sign_in_device">使用设备码登录</string>
+    
+    <string name="stars">星标</string>
+    <string name="forks">复刻</string>
+    <string name="watchers">关注者</string>
+    <string name="issues">议题</string>
+    <string name="pulls">合并请求</string>
+    <string name="code">代码</string>
+    <string name="commits">提交</string>
+    <string name="repositories">仓库</string>
+    <string name="followers">粉丝</string>
+    <string name="following">关注</string>
+    
+    <string name="open">开放</string>
+    <string name="closed">已关闭</string>
+    <string name="merged">已合并</string>
+    <string name="draft">草稿</string>
+    
+    <string name="back">返回</string>
+    <string name="retry">重试</string>
+    <string name="cancel">取消</string>
+    <string name="done">完成</string>
+    <string name="close">关闭</string>
+    <string name="selected">已选择</string>
+    
+    <string name="language">语言</string>
+    <string name="license">许可证</string>
+    <string name="default_branch">默认分支</string>
+    <string name="view_code">查看代码</string>
+    
+    <string name="general">通用</string>
+    <string name="theme">主题</string>
+    <string name="theme_color">主题颜色</string>
+    <string name="light">浅色</string>
+    <string name="dark">深色</string>
+    <string name="follow_system">跟随系统</string>
+    
+    <string name="english">English</string>
+    <string name="chinese">中文</string>
+    
+    <string name="code_options">代码选项</string>
+    <string name="code_options_subtitle">行号、自动换行、主题</string>
+    <string name="word_wrap">自动换行</string>
+    <string name="line_numbers">显示行号</string>
+    
+    <string name="account">账户</string>
+    <string name="github_account">GitHub 账户</string>
+    <string name="logged_in">已登录</string>
+    
+    <string name="logout_confirm_title">退出登录</string>
+    <string name="logout_confirm_message">确定要退出 GitHub 账户吗？</string>
+    
+    <string name="about">关于</string>
+    <string name="source_code">源代码</string>
+    <string name="view_on_github">在 GitHub 上查看</string>
+    <string name="report_bug">报告问题</string>
+    <string name="submit_issue">提交议题</string>
+    <string name="github_api_docs">GitHub API 文档</string>
+    <string name="rest_api_docs">REST API 文档</string>
+    
+    <string name="version_format">版本 %s</string>
+    
+    <string name="quick_access">快捷访问</string>
+    <string name="your_repositories">你的仓库</string>
+    <string name="starred">已星标</string>
+    <string name="recent_activity">最近活动</string>
+    <string name="organizations">组织</string>
+    
+    <string name="actions">工作流</string>
+    <string name="contributors">贡献者</string>
+    <string name="releases">发布</string>
+    
+    <string name="select_branch">选择分支</string>
+    <string name="readme">README</string>
+    
+    <string name="network_error">网络请求错误</string>
+    
+    <string name="add_issue">新建议题</string>
+    <string name="star">星标</string>
+    <string name="share">分享</string>
+    <string name="branch">分支</string>
+    <string name="change_branch">切换分支</string>
+    
+    <string name="pushed_to">推送到</string>
+    <string name="opened_pr_in">在</string>
+    <string name="opened_issue_in">在</string>
+    <string name="starred_repo">星标了</string>
+    <string name="forked">复刻了</string>
+    <string name="created">创建了</string>
+    <string name="deleted">删除了</string>
+    <string name="released">发布了</string>
+    <string name="commented_on">评论了</string>
+    <string name="commented_on_commit_in">评论了提交于</string>
+    <string name="reviewed_pr_in">审核了合并请求于</string>
+    <string name="commented_on_pr_in">评论了合并请求于</string>
+    <string name="acted_on">操作了</string>
+    
+    <string name="no_workflows">没有找到工作流</string>
+    <string name="no_workflow_runs">没有找到工作流运行</string>
+    <string name="no_contributors">没有找到贡献者</string>
+    <string name="no_commits">没有找到提交</string>
+    <string name="no_issues">没有找到议题</string>
+    <string name="no_pull_requests">没有找到合并请求</string>
+    
+    <string name="filter">筛选</string>
+    <string name="all">全部</string>
+    <string name="completed">已完成</string>
+    <string name="running">运行中</string>
+    <string name="queued">排队中</string>
+    
+    <string name="include_anonymous">包含匿名贡献者</string>
+    <string name="contributors_commits">%d 位贡献者，%d 次提交</string>
+    
+    <string name="success">成功</string>
+    <string name="failed">失败</string>
+    <string name="cancelled">已取消</string>
+    <string name="timed_out">超时</string>
+    <string name="skipped">已跳过</string>
+    
+    <string name="just_now">刚刚</string>
+    <string name="minutes_ago">%d 分钟前</string>
+    <string name="hours_ago">%d 小时前</string>
+    <string name="days_ago">%d 天前</string>
+    
+    <string name="star_format">%d 星标</string>
+    <string name="fork_format">%d 复刻</string>
+    <string name="issue_format">%d 议题</string>
+    
+    <string name="github_client">Android GitHub 客户端</string>
+    <string name="authenticate_github">使用 GitHub 认证</string>
+    <string name="open_url">1. 打开此链接：</string>
+    <string name="enter_code">2. 输入此代码：</string>
+    <string name="waiting_auth">等待授权中...</string>
+    <string name="continue_without_sign_in">不登录继续</string>
+    <string name="explore">发现</string>
+    
+    <string name="load_more">加载更多</string>
+    <string name="download">下载</string>
+    
+    <string name="filter_issues">筛选议题</string>
+    <string name="filter_pull_requests">筛选合并请求</string>
+    <string name="apply">应用</string>
+    
+    <string name="show_all_notifications">显示所有通知</string>
+    <string name="mark_all_read_title">全部标记为已读</string>
+    <string name="mark_all_read_message">确定要将所有通知标记为已读吗？</string>
+    <string name="mark_all_read">全部已读</string>
+    
+    <string name="recently_starred">最近星标</string>
+    <string name="recently_updated">最近更新</string>
+    <string name="full_name">全名</string>
+    <string name="pushed">推送时间</string>
+    
+    <string name="repos_format">仓库 (%d)</string>
+    
+    <string name="add_workflow_files">添加工作流文件到 .github/workflows/</string>
+    <string name="workflow_format">%d 个工作流</string>
+    <string name="run_format">%d 次运行</string>
+    <string name="workflow_runs">工作流运行</string>
+    <string name="pinned_repositories">置顶仓库</string>
+    <string name="contribution_activity">贡献活动</string>
+    <string name="unknown">未知</string>
+    <string name="made_public">公开了 %s</string>
+    <string name="activity_in">在 %s 的活动</string>
+    <string name="published_release">在 %s 发布了版本</string>
+    <string name="no_releases_found">没有找到发布</string>
+    <string name="no_organizations_found">没有找到组织</string>
+    <string name="no_repositories_found">没有找到仓库</string>
+    <string name="repository_format">%d 个仓库</string>
+    <string name="starred_repository_format">%d 个已星标仓库</string>
+    <string name="organization_format">%d 个组织</string>
+    
+    <string name="bio">简介</string>
+    <string name="state">状态</string>
+    <string name="search_placeholder">搜索...</string>
+    <string name="search_contents">搜索你的内容</string>
+    <string name="search_for_repos_users_issues">搜索仓库、用户或议题</string>
+    <string name="rate_limit_reached">已达到速率限制，请稍等片刻</string>
+    <string name="results_format">%d 个结果</string>
+    <string name="shown_format">显示 %d 个</string>
+    
+    <string name="no_activity">没有活动</string>
+    <string name="follow_some_users">关注一些用户以在此查看他们的活动</string>
+    <string name="private_repo">私有</string>
+    <string name="fork_repo">复刻</string>
+    <string name="forked_to">复刻到 %s</string>
+    <string name="organization_type">组织</string>
+    
+    <string name="staff">员工</string>
+    <string name="anonymous">匿名</string>
+    <string name="commits_count">%d 次提交</string>
+    <string name="assets_format">附件 (%d)</string>
+    <string name="pre_release">预发布</string>
+    <string name="binary_file">二进制文件</string>
+    <string name="bytes_format">%d 字节</string>
+    <string name="branch_format">分支: %s</string>
+    <string name="commits_in_branch">%d 次提交</string>
+    <string name="pushed_commits">推送了 %d 次提交</string>
+    
+    <string name="from_branch">从</string>
+    <string name="into_branch">到</string>
+    <string name="wants_to_merge">想要合并</string>
+    <string name="additions">增加</string>
+    <string name="deletions">删除</string>
+    <string name="files_changed">文件</string>
+    <string name="total_changes">总计</string>
+    
+    <string name="author">作者</string>
+    <string name="committer">提交者</string>
+    <string name="changed_files">修改的文件 (%d)</string>
+    
+    <string name="description">描述</string>
+    <string name="labels">标签</string>
+    <string name="assignees">负责人</string>
+    <string name="comments_format">%d 条评论</string>
+    <string name="opened_this_issue">打开了此议题</string>
+    <string name="reviews_format">%d 次审核</string>
+    
+    <string name="refresh">刷新</string>
+    <string name="sort">排序</string>
+    <string name="show_unread_only">仅显示未读</string>
+    <string name="show_all">显示全部</string>
+    <string name="mark_all_read_button">全部已读</string>
+    <string name="mark_as_read">标记为已读</string>
+    <string name="mark_as_done">标记为完成</string>
+    
+    <string name="pull_request">合并请求</string>
+    <string name="created_ref">创建了 %s</string>
+    <string name="deleted_ref">删除了 %s</string>
+    <string name="merged_pr">合并了 PR #%d</string>
+    <string name="closed_pr">关闭了 PR #%d</string>
+    <string name="opened_pr">打开了 PR #%d</string>
+    <string name="reopened_pr">重新打开了 PR #%d</string>
+    <string name="updated_pr">更新了 PR #%d</string>
+    <string name="reviewed_pr">审核了 PR (%s)</string>
+    <string name="commented_on_pr_review">评论了 PR 审核</string>
+    
+    <string name="repos_tab">仓库</string>
+    <string name="starred_tab">已星标</string>
+    <string name="followers_tab">粉丝</string>
+    <string name="following_tab">关注</string>
+    
+    <string name="loading_more">加载中...</string>
+    <string name="draft_label">草稿</string>
+    
+    <string name="total_filter">总计</string>
+    <string name="no_unread_notifications">没有未读通知</string>
+    <string name="view_profile">查看资料</string>
+    
+    <string name="repos_count">仓库 (%d)</string>
+</resources>

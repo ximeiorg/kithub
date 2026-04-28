@@ -1,5 +1,6 @@
 package com.kingzcheung.kithub
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,6 +18,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -24,6 +26,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
@@ -31,19 +34,37 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.kingzcheung.kithub.data.store.AppLanguage
 import com.kingzcheung.kithub.presentation.theme.KithubTheme
 import com.kingzcheung.kithub.presentation.ui.screens.*
 import com.kingzcheung.kithub.presentation.viewmodel.AuthViewModel
 import com.kingzcheung.kithub.presentation.viewmodel.SettingsViewModel
 import com.kingzcheung.kithub.util.ErrorNotifier
+import com.kingzcheung.kithub.data.store.SettingsStore
+import com.kingzcheung.kithub.util.LocaleHelper
+import com.kingzcheung.kithub.util.Strings
 import com.kingzcheung.kithub.util.UiEvent
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
+val LocalStrings = staticCompositionLocalOf<Strings> { error("Strings not provided") }
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    
+    private var currentLanguage: AppLanguage = AppLanguage.SYSTEM
+    
+    override fun attachBaseContext(newBase: Context) {
+        val prefs = newBase.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+        val langOrdinal = prefs.getInt("app_language", AppLanguage.SYSTEM.ordinal)
+        val language = AppLanguage.values().getOrElse(langOrdinal) { AppLanguage.SYSTEM }
+        currentLanguage = language
+        val context = LocaleHelper.wrapContext(newBase, language)
+        super.attachBaseContext(context)
+    }
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -59,6 +80,12 @@ fun KithubApp() {
     val settings by settingsViewModel.settings.collectAsState()
     val errorNotifier: ErrorNotifier = hiltViewModel<SettingsViewModel>().errorNotifier
     
+    val context = androidx.compose.ui.platform.LocalContext.current
+    
+    val strings = remember(settings.appLanguage) {
+        Strings
+    }
+    
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var pendingRetryAction by remember { mutableStateOf<(() -> Unit)?>(null) }
@@ -72,8 +99,8 @@ fun KithubApp() {
                     is UiEvent.ShowError -> {
                         pendingRetryAction = event.retryAction
                         val result = snackbarHostState.showSnackbar(
-                            message = "Network request error",
-                            actionLabel = if (event.retryAction != null) "Retry" else null,
+                            message = strings.getNetworkError(context),
+                            actionLabel = if (event.retryAction != null) strings.getRetry(context) else null,
                             duration = SnackbarDuration.Long
                         )
                         if (result == SnackbarResult.ActionPerformed) {
@@ -92,10 +119,11 @@ fun KithubApp() {
         }
     }
     
-    KithubTheme(
-        themeMode = settings.themeMode,
-        themeColor = settings.themeColor
-    ) {
+    CompositionLocalProvider(LocalStrings provides strings) {
+        KithubTheme(
+            themeMode = settings.themeMode,
+            themeColor = settings.themeColor
+        ) {
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) }
         ) { paddingValues ->
@@ -402,4 +430,5 @@ fun KithubApp() {
             }
         }
     }
+}
 }

@@ -9,8 +9,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.domain.model.PullRequest
 import com.kingzcheung.kithub.domain.model.PullRequestBranch
 import com.kingzcheung.kithub.presentation.ui.components.formatRelativeTime
@@ -23,18 +25,20 @@ fun PullRequestsListScreen(
     viewModel: PullRequestsListViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    val strings = LocalStrings.current
     var showFilterDialog by remember { mutableStateOf(false) }
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Pull Requests") },
+                title = { Text(strings.getPulls(context)) },
                 actions = {
                     IconButton(onClick = { showFilterDialog = true }) {
-                        Icon(Icons.Default.FilterList, contentDescription = "Filter")
+                        Icon(Icons.Default.FilterList, contentDescription = strings.getFilter(context))
                     }
                     IconButton(onClick = { viewModel.refresh() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                        Icon(Icons.Default.Refresh, contentDescription = strings.getRefresh(context))
                     }
                 }
             )
@@ -47,7 +51,9 @@ fun PullRequestsListScreen(
         ) {
             PrFilterChipsRow(
                 stateFilter = state.stateFilter,
-                onStateFilterChange = { viewModel.setStateFilter(it) }
+                onStateFilterChange = { viewModel.setStateFilter(it) },
+                strings = strings,
+                context = context
             )
             
             if (state.loading && state.pullRequests.isEmpty()) {
@@ -65,13 +71,13 @@ fun PullRequestsListScreen(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
                             Icons.Default.Info,
-                            contentDescription = "No pull requests",
+                            contentDescription = strings.getNoResults(context),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(48.dp)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "No pull requests found",
+                            text = context.getString(com.kingzcheung.kithub.R.string.no_pull_requests),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -94,7 +100,9 @@ fun PullRequestsListScreen(
                                 if (repoInfo != null) {
                                     onNavigateToPullRequest(repoInfo.first, repoInfo.second, pr.number)
                                 }
-                            }
+                            },
+                            strings = strings,
+                            context = context
                         )
                     }
                     
@@ -110,7 +118,7 @@ fun PullRequestsListScreen(
                                     CircularProgressIndicator()
                                 } else {
                                     Button(onClick = { viewModel.loadMore() }) {
-                                        Text("Load More")
+                                        Text(strings.getLoadMore(context))
                                     }
                                 }
                             }
@@ -127,7 +135,9 @@ fun PullRequestsListScreen(
                 onApply = { filter ->
                     viewModel.setStateFilter(filter)
                     showFilterDialog = false
-                }
+                },
+                strings = strings,
+                context = context
             )
         }
     }
@@ -136,7 +146,9 @@ fun PullRequestsListScreen(
 @Composable
 fun PrFilterChipsRow(
     stateFilter: String,
-    onStateFilterChange: (String) -> Unit
+    onStateFilterChange: (String) -> Unit,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     Row(
         modifier = Modifier
@@ -147,17 +159,17 @@ fun PrFilterChipsRow(
         FilterChip(
             selected = stateFilter == "all",
             onClick = { onStateFilterChange("all") },
-            label = { Text("All") }
+            label = { Text(context.getString(com.kingzcheung.kithub.R.string.all)) }
         )
         FilterChip(
             selected = stateFilter == "open",
             onClick = { onStateFilterChange("open") },
-            label = { Text("Open") }
+            label = { Text(strings.getOpen(context)) }
         )
         FilterChip(
             selected = stateFilter == "closed",
             onClick = { onStateFilterChange("closed") },
-            label = { Text("Closed") }
+            label = { Text(strings.getClosed(context)) }
         )
     }
 }
@@ -166,48 +178,50 @@ fun PrFilterChipsRow(
 fun PrFilterDialog(
     currentFilter: String,
     onDismiss: () -> Unit,
-    onApply: (String) -> Unit
+    onApply: (String) -> Unit,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     var selectedFilter by remember { mutableStateOf(currentFilter) }
     
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Filter Pull Requests") },
+        title = { Text(strings.getFilterPullRequests(context)) },
         text = {
             Column {
-                Text("State", style = MaterialTheme.typography.labelLarge)
+                Text(strings.getState(context), style = MaterialTheme.typography.labelLarge)
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
                         selected = selectedFilter == "all",
                         onClick = { selectedFilter = "all" }
                     )
-                    Text("All")
+                    Text(context.getString(com.kingzcheung.kithub.R.string.all))
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
                         selected = selectedFilter == "open",
                         onClick = { selectedFilter = "open" }
                     )
-                    Text("Open")
+                    Text(strings.getOpen(context))
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
                         selected = selectedFilter == "closed",
                         onClick = { selectedFilter = "closed" }
                     )
-                    Text("Closed")
+                    Text(strings.getClosed(context))
                 }
             }
         },
         confirmButton = {
             Button(onClick = { onApply(selectedFilter) }) {
-                Text("Apply")
+                Text(strings.getApply(context))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(strings.getCancel(context))
             }
         }
     )
@@ -217,7 +231,9 @@ fun PrFilterDialog(
 @Composable
 fun PrListItem(
     pullRequest: PullRequest,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -249,8 +265,8 @@ fun PrListItem(
                 ) {
                     Text(
                         text = when (pullRequest.state.name.lowercase()) {
-                            "open" -> "Open"
-                            "closed" -> if (pullRequest.merged) "Merged" else "Closed"
+                            "open" -> strings.getOpen(context)
+                            "closed" -> if (pullRequest.merged) strings.getMerged(context) else strings.getClosed(context)
                             else -> pullRequest.state.name
                         },
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
@@ -292,7 +308,7 @@ fun PrListItem(
                 if (pullRequest.draft) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "• Draft",
+                        text = "• ${strings.getDraftLabel(context)}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

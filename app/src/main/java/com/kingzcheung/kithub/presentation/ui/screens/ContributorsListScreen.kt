@@ -11,9 +11,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.domain.model.Contributor
 import com.kingzcheung.kithub.presentation.ui.components.UserAvatar
 import com.kingzcheung.kithub.presentation.viewmodel.ContributorsListViewModel
@@ -25,22 +27,24 @@ fun ContributorsListScreen(
     viewModel: ContributorsListViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    val strings = LocalStrings.current
     var showFilterMenu by remember { mutableStateOf(false) }
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Contributors") },
+                title = { Text(strings.getContributors(context)) },
                 actions = {
                     IconButton(onClick = { showFilterMenu = true }) {
-                        Icon(Icons.Default.FilterList, contentDescription = "Filter")
+                        Icon(Icons.Default.FilterList, contentDescription = strings.getFilter(context))
                     }
                     DropdownMenu(
                         expanded = showFilterMenu,
                         onDismissRequest = { showFilterMenu = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Include Anonymous") },
+                            text = { Text(strings.getIncludeAnonymous(context)) },
                             onClick = {
                                 viewModel.toggleAnonymous()
                                 showFilterMenu = false
@@ -53,7 +57,7 @@ fun ContributorsListScreen(
                         )
                     }
                     IconButton(onClick = { viewModel.refresh() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                        Icon(Icons.Default.Refresh, contentDescription = strings.getRefresh(context))
                     }
                 }
             )
@@ -78,13 +82,13 @@ fun ContributorsListScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         Icons.Default.People,
-                        contentDescription = "No contributors",
+                        contentDescription = strings.getNoResults(context),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(48.dp)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "No contributors found",
+                        text = context.getString(com.kingzcheung.kithub.R.string.no_contributors),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -102,7 +106,7 @@ fun ContributorsListScreen(
                     item {
                         val totalContributions = state.contributors.sumOf { it.contributions }
                         Text(
-                            text = "${state.contributors.size} contributors, $totalContributions commits",
+                            text = context.getString(com.kingzcheung.kithub.R.string.contributors_commits, state.contributors.size, totalContributions),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 8.dp)
@@ -116,7 +120,9 @@ fun ContributorsListScreen(
                 ) { contributor ->
                     ContributorCard(
                         contributor = contributor,
-                        onClick = { onNavigateToUser(contributor.login) }
+                        onClick = { onNavigateToUser(contributor.login) },
+                        strings = strings,
+                        context = context
                     )
                 }
                 
@@ -132,7 +138,7 @@ fun ContributorsListScreen(
                                 CircularProgressIndicator()
                             } else {
                                 Button(onClick = { viewModel.loadMore() }) {
-                                    Text("Load More")
+                                    Text(strings.getLoadMore(context))
                                 }
                             }
                         }
@@ -147,7 +153,9 @@ fun ContributorsListScreen(
 fun ContributorCard(
     contributor: Contributor,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -189,7 +197,7 @@ fun ContributorCard(
                             color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
                         ) {
                             Text(
-                                text = "STAFF",
+                                text = strings.getStaff(context),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
@@ -204,7 +212,7 @@ fun ContributorCard(
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                         ) {
                             Text(
-                                text = "Anonymous",
+                                text = strings.getAnonymous(context),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
@@ -216,7 +224,7 @@ fun ContributorCard(
                 Spacer(modifier = Modifier.height(4.dp))
                 
                 Text(
-                    text = "${contributor.contributions} commits",
+                    text = strings.getCommitsCount(context, contributor.contributions),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -224,7 +232,7 @@ fun ContributorCard(
             
             Icon(
                 Icons.Default.ChevronRight,
-                contentDescription = "View profile",
+                contentDescription = strings.getViewProfile(context),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                 modifier = Modifier.size(24.dp)
             )

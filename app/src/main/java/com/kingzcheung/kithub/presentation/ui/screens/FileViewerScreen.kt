@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.domain.model.ContentType
 import com.kingzcheung.kithub.presentation.viewmodel.FileViewerViewModel
 
@@ -31,19 +32,20 @@ fun FileViewerScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    val strings = LocalStrings.current
     
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = state.content?.name ?: "File",
+                        text = state.content?.name ?: strings.getUnknown(context),
                         style = MaterialTheme.typography.titleMedium
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = strings.getBack(context))
                     }
                 },
                 actions = {
@@ -51,13 +53,13 @@ fun FileViewerScreen(
                         state.content?.htmlUrl?.let { url ->
                             val shareIntent = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
-                                putExtra(Intent.EXTRA_SUBJECT, state.content?.name ?: "File")
+                                putExtra(Intent.EXTRA_SUBJECT, state.content?.name ?: strings.getUnknown(context))
                                 putExtra(Intent.EXTRA_TEXT, url)
                             }
-                            context.startActivity(Intent.createChooser(shareIntent, "Share file"))
+                            context.startActivity(Intent.createChooser(shareIntent, strings.getShare(context)))
                         }
                     }) {
-                        Icon(Icons.Default.Share, contentDescription = "Share")
+                        Icon(Icons.Default.Share, contentDescription = strings.getShare(context))
                     }
                 }
             )
@@ -87,7 +89,7 @@ fun FileViewerScreen(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
                             Icons.AutoMirrored.Filled.InsertDriveFile,
-                            contentDescription = "Binary file",
+                            contentDescription = strings.getBinaryFile(context),
                             modifier = Modifier.size(64.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -98,7 +100,7 @@ fun FileViewerScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Binary file • ${content.size} bytes",
+                            text = "${strings.getBinaryFile(context)} • ${strings.getBytesFormat(context, content.size)}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -107,7 +109,7 @@ fun FileViewerScreen(
                             Button(onClick = {}) {
                                 Icon(Icons.Default.Download, contentDescription = null)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Download")
+                                Text(strings.getDownload(context))
                             }
                         }
                     }

@@ -9,8 +9,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.domain.model.UserBrief
 import com.kingzcheung.kithub.presentation.ui.components.*
 import com.kingzcheung.kithub.presentation.viewmodel.UserOrgsListViewModel
@@ -23,19 +25,21 @@ fun UserOrgsListScreen(
     viewModel: UserOrgsListViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    val strings = LocalStrings.current
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Organizations") },
+                title = { Text(strings.getOrganizations(context)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = strings.getBack(context))
                     }
                 },
                 actions = {
                     IconButton(onClick = { viewModel.refresh() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                        Icon(Icons.Default.Refresh, contentDescription = strings.getRefresh(context))
                     }
                 }
             )
@@ -52,7 +56,7 @@ fun UserOrgsListScreen(
             }
         } else if (state.error != null) {
             ErrorState(
-                message = state.error ?: "Unknown error",
+                message = state.error ?: strings.getUnknown(context),
                 onRetry = { viewModel.refresh() },
                 modifier = Modifier.padding(paddingValues)
             )
@@ -66,13 +70,13 @@ fun UserOrgsListScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         Icons.Default.Group,
-                        contentDescription = "No organizations",
+                        contentDescription = strings.getNoResults(context),
                         modifier = Modifier.size(48.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "No organizations found",
+                        text = strings.getNoOrganizationsFound(context),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -88,7 +92,7 @@ fun UserOrgsListScreen(
             ) {
                 item {
                     Text(
-                        text = "${state.orgs.size} organization(s)",
+                        text = strings.getOrganizationFormat(context, state.orgs.size),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 8.dp)
@@ -101,7 +105,9 @@ fun UserOrgsListScreen(
                 ) { org ->
                     OrgItem(
                         org = org,
-                        onClick = { onNavigateToUser(org.login) }
+                        onClick = { onNavigateToUser(org.login) },
+                        strings = strings,
+                        context = context
                     )
                 }
                 
@@ -117,7 +123,7 @@ fun UserOrgsListScreen(
                                 CircularProgressIndicator()
                             } else {
                                 Button(onClick = { viewModel.loadMore() }) {
-                                    Text("Load More")
+                                    Text(strings.getLoadMore(context))
                                 }
                             }
                         }
@@ -132,7 +138,9 @@ fun UserOrgsListScreen(
 fun OrgItem(
     org: UserBrief,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -158,7 +166,7 @@ fun OrgItem(
                 if (org.type == "Organization") {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Organization",
+                        text = strings.getOrganizationType(context),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

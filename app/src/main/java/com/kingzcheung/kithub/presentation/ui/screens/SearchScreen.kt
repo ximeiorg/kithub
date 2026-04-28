@@ -21,11 +21,13 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kingzcheung.kithub.LocalStrings
 import com.kingzcheung.kithub.domain.model.Issue
 import com.kingzcheung.kithub.domain.model.Repository
 import com.kingzcheung.kithub.domain.model.UserBrief
@@ -46,6 +48,8 @@ fun SearchScreen(
     viewModel: SearchViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    val strings = LocalStrings.current
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     
@@ -70,10 +74,10 @@ fun SearchScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Search") },
+                title = { Text(strings.getSearch(context)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = strings.getBack(context))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -106,7 +110,9 @@ fun SearchScreen(
                         },
                         isFocused = isFocused,
                         interactionSource = interactionSource,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        strings = strings,
+                        context = context
                     )
                     
                     Spacer(modifier = Modifier.height(12.dp))
@@ -114,7 +120,9 @@ fun SearchScreen(
                     SearchTypeChips(
                         selectedType = state.searchType,
                         onTypeSelected = { viewModel.setSearchType(it) },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        strings = strings,
+                        context = context
                     )
                 }
             }
@@ -122,7 +130,7 @@ fun SearchScreen(
             if (state.loading && state.repositories.isEmpty() && state.users.isEmpty() && state.issues.isEmpty()) {
                 LoadingIndicator(modifier = Modifier.fillMaxSize())
             } else if (searchQuery.isEmpty()) {
-                SearchEmptyState(modifier = Modifier.fillMaxSize())
+                SearchEmptyState(modifier = Modifier.fillMaxSize(), strings = strings, context = context)
             } else {
                 SearchResultsList(
                     searchType = state.searchType,
@@ -136,7 +144,9 @@ fun SearchScreen(
                     onRepoClick = onNavigateToRepository,
                     onUserClick = onNavigateToUser,
                     onIssueClick = onNavigateToIssue,
-                    error = state.error
+                    error = state.error,
+                    strings = strings,
+                    context = context
                 )
             }
         }
@@ -150,7 +160,9 @@ fun SearchBar(
     onSearch: () -> Unit,
     isFocused: Boolean,
     interactionSource: MutableInteractionSource,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     val backgroundColor = if (isFocused) {
         MaterialTheme.colorScheme.surfaceVariant
@@ -172,7 +184,7 @@ fun SearchBar(
         ) {
             Icon(
                 imageVector = Icons.Default.Search,
-                contentDescription = "Search",
+                contentDescription = strings.getSearch(context),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(22.dp)
             )
@@ -182,7 +194,7 @@ fun SearchBar(
             Box(modifier = Modifier.weight(1f)) {
                 if (query.isEmpty()) {
                     Text(
-                        text = "Search...",
+                        text = strings.getSearchPlaceholder(context),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     )
@@ -210,7 +222,7 @@ fun SearchBar(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Clear,
-                        contentDescription = "Clear",
+                        contentDescription = strings.getCancel(context),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
@@ -224,7 +236,9 @@ fun SearchBar(
 fun SearchTypeChips(
     selectedType: SearchType,
     onTypeSelected: (SearchType) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     Row(
         modifier = modifier,
@@ -233,21 +247,21 @@ fun SearchTypeChips(
         SearchChip(
             selected = selectedType == SearchType.REPOSITORIES,
             onClick = { onTypeSelected(SearchType.REPOSITORIES) },
-            label = "Repos",
+            label = strings.getReposTab(context),
             icon = Icons.Outlined.Folder,
             modifier = Modifier.weight(1f)
         )
         SearchChip(
             selected = selectedType == SearchType.USERS,
             onClick = { onTypeSelected(SearchType.USERS) },
-            label = "Users",
+            label = strings.getSearch(context),
             icon = Icons.Outlined.Person,
             modifier = Modifier.weight(1f)
         )
         SearchChip(
             selected = selectedType == SearchType.ISSUES,
             onClick = { onTypeSelected(SearchType.ISSUES) },
-            label = "Issues",
+            label = strings.getIssues(context),
             icon = Icons.Outlined.BugReport,
             modifier = Modifier.weight(1f)
         )
@@ -279,7 +293,9 @@ fun SearchChip(
 
 @Composable
 fun SearchEmptyState(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     Column(
         modifier = modifier,
@@ -288,7 +304,7 @@ fun SearchEmptyState(
     ) {
         Icon(
             imageVector = Icons.Outlined.Search,
-            contentDescription = "Search",
+            contentDescription = strings.getSearch(context),
             modifier = Modifier.size(64.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
         )
@@ -296,7 +312,7 @@ fun SearchEmptyState(
         Spacer(modifier = Modifier.height(16.dp))
         
         Text(
-            text = "Search your contents",
+            text = strings.getSearchContents(context),
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onSurface
         )
@@ -304,7 +320,7 @@ fun SearchEmptyState(
         Spacer(modifier = Modifier.height(8.dp))
         
         Text(
-            text = "Search for repositories, users, or issues",
+            text = strings.getSearchForReposUsersIssues(context),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -325,7 +341,9 @@ fun SearchResultsList(
     onUserClick: (String) -> Unit,
     onIssueClick: (String, String, Int) -> Unit,
     error: String? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    strings: com.kingzcheung.kithub.util.Strings,
+    context: android.content.Context
 ) {
     val items = when (searchType) {
         SearchType.REPOSITORIES -> repositories
@@ -348,14 +366,14 @@ fun SearchResultsList(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "$displayCount results",
+                        text = strings.getResultsFormat(context, displayCount),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     
                     if (items.size < displayCount) {
                         Text(
-                            text = "${items.size} shown",
+                            text = strings.getShownFormat(context, items.size),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -408,7 +426,7 @@ fun SearchResultsList(
                                     strokeWidth = 2.dp
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Loading...")
+                                Text(strings.getLoadingMore(context))
                             } else {
                                 Icon(
                                     Icons.Default.ArrowDownward,
@@ -416,14 +434,14 @@ fun SearchResultsList(
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Load More")
+                                Text(strings.getLoadMore(context))
                             }
                         }
                         
                         if (error != null && error.contains("rate limit")) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Rate limit reached. Please wait a moment.",
+                                text = strings.getRateLimitReached(context),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.error
                             )
@@ -434,7 +452,7 @@ fun SearchResultsList(
         } else {
             item {
                 EmptyState(
-                    message = "No results found",
+                    message = strings.getNoResults(context),
                     modifier = Modifier.fillMaxSize()
                 )
             }
