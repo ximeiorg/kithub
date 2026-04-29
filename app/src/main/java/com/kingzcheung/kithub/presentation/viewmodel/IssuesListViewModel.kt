@@ -1,9 +1,10 @@
 package com.kingzcheung.kithub.presentation.viewmodel
 
 import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kingzcheung.kithub.data.repository.UserRepository
+import com.kingzcheung.kithub.data.repository.IssueRepository
 import com.kingzcheung.kithub.domain.model.Issue
 import com.kingzcheung.kithub.util.ErrorNotifier
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,14 +25,18 @@ data class IssuesListState(
 
 @HiltViewModel
 class IssuesListViewModel @Inject constructor(
-    private val userRepository: UserRepository,
-    private val errorNotifier: ErrorNotifier
+    private val issueRepository: IssueRepository,
+    private val errorNotifier: ErrorNotifier,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     
     companion object {
         private const val TAG = "IssuesListViewModel"
         private const val PER_PAGE = 30
     }
+    
+    private val owner: String = savedStateHandle.get<String>("owner") ?: ""
+    private val repo: String = savedStateHandle.get<String>("repo") ?: ""
     
     private val _state = MutableStateFlow(IssuesListState())
     val state: StateFlow<IssuesListState> = _state.asStateFlow()
@@ -44,15 +49,15 @@ class IssuesListViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(loading = true, page = 1) }
             try {
-                Log.d(TAG, "Loading issues with state=${_state.value.stateFilter}")
-                val allItems = userRepository.getCurrentUserIssues(page = 1)
-                val issues = filterIssues(allItems, _state.value.stateFilter)
-                Log.d(TAG, "Loaded ${issues.size} issues")
+                Log.d(TAG, "Loading repository issues for $owner/$repo with state=${_state.value.stateFilter}")
+                val issues = issueRepository.getIssues(owner, repo, _state.value.stateFilter, 1)
+                val filteredIssues = issues.filter { it.pullRequest == null }
+                Log.d(TAG, "Loaded ${filteredIssues.size} issues (excluding PRs)")
                 _state.update {
                     it.copy(
-                        issues = issues,
+                        issues = filteredIssues,
                         loading = false,
-                        hasMore = issues.size >= PER_PAGE,
+                        hasMore = filteredIssues.size >= PER_PAGE,
                         page = 1
                     )
                 }
@@ -70,13 +75,13 @@ class IssuesListViewModel @Inject constructor(
             val nextPage = _state.value.page + 1
             _state.update { it.copy(loading = true) }
             try {
-                val allItems = userRepository.getCurrentUserIssues(page = nextPage)
-                val newIssues = filterIssues(allItems, _state.value.stateFilter)
+                val issues = issueRepository.getIssues(owner, repo, _state.value.stateFilter, nextPage)
+                val filteredIssues = issues.filter { it.pullRequest == null }
                 _state.update {
                     it.copy(
-                        issues = it.issues + newIssues,
+                        issues = it.issues + filteredIssues,
                         loading = false,
-                        hasMore = newIssues.size >= PER_PAGE,
+                        hasMore = filteredIssues.size >= PER_PAGE,
                         page = nextPage
                     )
                 }
@@ -95,13 +100,5 @@ class IssuesListViewModel @Inject constructor(
     
     fun refresh() {
         loadIssues()
-    }
-    
-    private fun filterIssues(issues: List<Issue>, stateFilter: String): List<Issue> {
-        return when (stateFilter) {
-            "open" -> issues.filter { it.state.name.lowercase() == "open" }
-            "closed" -> issues.filter { it.state.name.lowercase() == "closed" }
-            else -> issues
-        }
     }
 }

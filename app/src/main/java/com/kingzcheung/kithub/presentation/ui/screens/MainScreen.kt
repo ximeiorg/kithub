@@ -212,7 +212,7 @@ fun BottomNavItemView(
     val title = when (item.titleKey) {
         "home" -> strings.getHome(context)
         "notifications" -> strings.getNotifications(context)
-        "explore" -> "Explore"
+        "explore" -> strings.getExplore(context)
         "profile" -> strings.getProfile(context)
         "settings" -> strings.getSettings(context)
         else -> item.titleKey

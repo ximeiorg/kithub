@@ -1,5 +1,6 @@
 package com.kingzcheung.kithub.presentation.viewmodel
 
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kingzcheung.kithub.data.repository.NotificationRepository
@@ -18,7 +19,9 @@ data class NotificationsState(
     val error: String? = null,
     val showAll: Boolean = false,
     val page: Int = 1,
-    val hasMore: Boolean = true
+    val hasMore: Boolean = true,
+    val actionError: String? = null,
+    val actionSuccess: String? = null
 )
 
 @HiltViewModel
@@ -31,6 +34,10 @@ class NotificationsViewModel @Inject constructor(
     
     init {
         loadNotifications()
+    }
+    
+    fun clearActionMessage() {
+        _state.update { it.copy(actionError = null, actionSuccess = null) }
     }
     
     fun loadNotifications() {
@@ -93,11 +100,12 @@ class NotificationsViewModel @Inject constructor(
                     it.copy(
                         notifications = it.notifications.map { n ->
                             if (n.id == threadId) n.copy(unread = false) else n
-                        }
+                        },
+                        actionSuccess = "Marked as read"
                     )
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(error = e.message) }
+                _state.update { it.copy(actionError = e.message ?: "Failed to mark as read") }
             }
         }
     }
@@ -108,11 +116,12 @@ class NotificationsViewModel @Inject constructor(
                 notificationRepository.markNotificationsAsRead()
                 _state.update {
                     it.copy(
-                        notifications = it.notifications.map { n -> n.copy(unread = false) }
+                        notifications = it.notifications.map { n -> n.copy(unread = false) },
+                        actionSuccess = "All marked as read"
                     )
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(error = e.message) }
+                _state.update { it.copy(actionError = e.message ?: "Failed to mark all as read") }
             }
         }
     }
@@ -123,11 +132,12 @@ class NotificationsViewModel @Inject constructor(
                 notificationRepository.markThreadAsDone(threadId.toInt())
                 _state.update {
                     it.copy(
-                        notifications = it.notifications.filter { n -> n.id != threadId }
+                        notifications = it.notifications.filter { n -> n.id != threadId },
+                        actionSuccess = "Marked as done"
                     )
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(error = e.message) }
+                _state.update { it.copy(actionError = e.message ?: "Failed to mark as done") }
             }
         }
     }

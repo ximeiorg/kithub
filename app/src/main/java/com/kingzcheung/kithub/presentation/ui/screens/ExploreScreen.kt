@@ -68,13 +68,9 @@ fun ExploreScreen(
     }
     
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text(strings.getExplore(context)) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
+                title = { Text(strings.getExplore(context)) }
             )
         }
     ) { paddingValues ->

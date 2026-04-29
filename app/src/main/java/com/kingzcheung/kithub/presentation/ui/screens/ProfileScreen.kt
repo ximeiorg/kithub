@@ -47,13 +47,9 @@ fun ProfileScreen(
     val strings = LocalStrings.current
     
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { Text(strings.getProfile(context)) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                ),
                 actions = {
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(Icons.Default.Settings, contentDescription = strings.getSettings(context))

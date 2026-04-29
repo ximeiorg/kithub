@@ -34,6 +34,21 @@ fun NotificationsScreen(
     val context = LocalContext.current
     val strings = LocalStrings.current
     var showMarkAllDialog by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    
+    LaunchedEffect(state.actionError) {
+        state.actionError?.let { error ->
+            snackbarHostState.showSnackbar(error)
+            viewModel.clearActionMessage()
+        }
+    }
+    
+    LaunchedEffect(state.actionSuccess) {
+        state.actionSuccess?.let { success ->
+            snackbarHostState.showSnackbar(success)
+            viewModel.clearActionMessage()
+        }
+    }
     
     Scaffold(
         topBar = {
@@ -51,7 +66,8 @@ fun NotificationsScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         if (state.loading && state.notifications.isEmpty()) {
             Box(
@@ -219,7 +235,7 @@ fun NotificationCard(
                     modifier = Modifier.size(32.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Check,
+                        imageVector = Icons.Default.MarkEmailRead,
                         contentDescription = strings.getMarkAsRead(context),
                         modifier = Modifier.size(18.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -231,7 +247,7 @@ fun NotificationCard(
                     modifier = Modifier.size(32.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Done,
+                        imageVector = Icons.Default.Delete,
                         contentDescription = strings.getMarkAsDone(context),
                         modifier = Modifier.size(18.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant

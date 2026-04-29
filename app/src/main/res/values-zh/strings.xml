@@ -8,7 +8,7 @@
     <string name="home">首页</string>
     <string name="search">搜索</string>
     <string name="notifications">通知</string>
-    <string name="profile">个人主页</string>
+    <string name="profile">主页</string>
     <string name="settings">设置</string>
     <string name="logout">退出登录</string>
     <string name="dark_mode">深色模式</string>
